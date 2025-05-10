@@ -47,10 +47,19 @@ h2 {
   align-items: center;
 }
 .topbar__logo {
-  font-family: "Reenie Beanie";
-  font-size: 2.75rem;
-  font-weight: 400;
+  display: block;      /* чтобы margin’ы работали корректно */
+  height: 2.5rem;      /* та же высота, что и font-size у текста ранее */
+  width: auto;         /* сохраняем пропорции SVG */
+  padding-left: 20px;
 }
+
+.topbar__inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* ключевое для центрирования по вертикали */
+  padding: 10px 0px;
+}
+
 .topbar__btn {
   background: var(--accent);
   color: #fff;
@@ -300,3 +309,5 @@ h2 {
   margin-bottom: 40px; /* или нужное вам значение */
 }
 
+
+/* фавикон */
