@@ -24,6 +24,14 @@
     width: auto;         /* сохраняем пропорции SVG */
     padding-left: 5px;
   }
+
+  .topbar__logo img {
+  display: block;
+  height: auto;      /* сбрасываем жёсткое значение */
+  max-height: 2rem; /* по умолчанию — тот же размер, что и в десктоп */
+  width: auto;
+}
+
   .topbar__btn {
     padding: 6px 22px;
     font-size: 0.9rem;
