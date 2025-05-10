@@ -250,32 +250,62 @@
   }
   
   /* Карусель: гарантируем overflow только на контейнере */
-  .profile-frame__skills {
-  padding-top: 0px;
-  padding-left: 0px;
+.profile-frame__skills {
+  padding: 20px;
 }
-  .carousel-container {
-    position: relative;
-    overflow: hidden;
-    cursor: grab;
-  }
-  .carousel-track {
-    display: flex;
-    gap: 16px;
-    will-change: transform;
-  }
-  .carousel-item {
-    flex: 0 0 auto;
-    width: auto;
-    height: auto;
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .carousel-item img {
-    display: block;
-    width: auto; height: 100%;
-    object-fit: cover;
-  }
+.carousel-container {
+  position: relative;
+  overflow-x: auto;               /* вместо hidden */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* инерция на мобильных */
+  scroll-behavior: smooth;         /* плавный переход */
+  scroll-snap-type: x mandatory;   /* опционально: прилипание */
+  cursor: grab;
+  height: 240px;                   /* оставляем вашу высоту */
+  padding-bottom: 8px;             /* место под скрытый скроллбар */
+}
+
+/* Скрываем WebKit-скроллбар */
+.carousel-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Трек становится просто flex + snap */
+.carousel-track {
+  display: flex;
+  gap: var(--gap);
+}
+.carousel-item {
+  flex: 0 0 auto;
+  height: 240px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  scroll-snap-align: start;       /* опционально */
+}
+.carousel-item img {
+  display: block;
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+  object-position: center;
+}
+.carousel-track {
+  display: flex;
+  gap: 16px;
+  will-change: transform;
+}
+.carousel-item {
+  flex: 0 0 auto;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.carousel-item img {
+  display: block;
+  width: auto; height: 100%;
+  object-fit: cover;
+}
   
 
 

@@ -16,12 +16,15 @@
     let scrollPos = 0;
 
     // при каждом колесе пересчитываем половину ширины
-    carousel.addEventListener('wheel', e => {
-      e.preventDefault();
-      const halfWidth = track.scrollWidth / 2;
-      scrollPos = (scrollPos + e.deltaY + halfWidth) % halfWidth;
-      track.style.transform = `translateX(${-scrollPos}px)`;
-    });
+    // Работает только на десктопе (на тач-устройствах свайпит нативно)
+if (!('ontouchstart' in window)) {
+  carousel.addEventListener('wheel', e => {
+    e.preventDefault();
+    const halfWidth = track.scrollWidth / 2;
+    scrollPos = (scrollPos + e.deltaY + halfWidth) % halfWidth;
+    track.style.transform = `translateX(${-scrollPos}px)`;
+  });
+}
 
     // открытие лайтбокса
     carousel.addEventListener('click', e => {
