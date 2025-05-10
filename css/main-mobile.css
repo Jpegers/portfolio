@@ -136,8 +136,16 @@
 
 /* Карусель */
 .carousel-container {
-    height: 160px;
-    margin-top: 12px;
+  height: 160px;
+  margin-top: 12px;
+  position: relative;
+  overflow-x: auto;            /* теперь можно свайпать по горизонтали */
+  overflow-y: hidden;          /* вертикально не скроллится */
+  -webkit-overflow-scrolling: touch;  /* инерция на iOS */
+  scroll-behavior: smooth;      /* плавный скролл */
+  display: flex;                /* чтобы track не ломался */
+  gap: var(--gap);
+  padding-bottom: 8px;          /* пространство под скрытый скроллбар */
 }
 .carousel-track {
     gap: 8px;
@@ -206,31 +214,6 @@
   z-index: 1;
 }
 
-/* Карусель: гарантируем overflow только на контейнере */
-.carousel-container {
-  position: relative;
-  overflow: hidden;
-  cursor: grab;
-}
-.carousel-track {
-  display: flex;
-  gap: 16px;
-  will-change: transform;
-}
-.carousel-item {
-  flex: 0 0 auto;
-  width: 300px;
-  height: auto;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.carousel-item img {
-  display: block;
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-
-
 
 
 
@@ -279,14 +262,14 @@
   }
   .carousel-item {
     flex: 0 0 auto;
-    width: 300px;
+    width: auto;
     height: auto;
     border-radius: 8px;
     overflow: hidden;
   }
   .carousel-item img {
     display: block;
-    width: 100%; height: 100%;
+    width: auto; height: 100%;
     object-fit: cover;
   }
   
