@@ -40,6 +40,7 @@ if (!('ontouchstart' in window)) {
 
   // 4) Логика закрытия лайтбокса
   lbClose.addEventListener('click', e => {
+    console.log('clicked element:', e.target);
     e.stopPropagation();
     lightbox.style.display = 'none';
   });
