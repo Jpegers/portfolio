@@ -126,6 +126,7 @@ h2 {
   padding: 20px 0px 20px 0px;
 }
 .btn--primary {
+  font-size: 1.25rem;
   background: var(--accent);
   color: #fff;
   padding: 12px 36px;
@@ -175,13 +176,13 @@ h2 {
 
 /* Background colors */
 .project-card--beetroot {
-  background-color: #D32F2F;
+  background-color: #CB1333;
 }
 .project-card--rodina {
-  background-color: #2D2D2D;
+  background-color: #2C2C2C;
 }
 .project-card--ai-model {
-  background-color: #E65100;
+  background-color: #E35F17;
 }
 
 /* Карусель */
