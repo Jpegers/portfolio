@@ -1,68 +1,94 @@
 /* main-mobile.css */
 
 @media (max-width: 768px) {
-/* Контейнер */
-.container {
+  /* ------------------------------------
+     Общие контейнеры и отступы
+  ------------------------------------ */
+  .container {
     padding: 0 16px;
-}
+  }
 
-/* Topbar: лого и кнопка в строку */
-.topbar__inner {
+  /* ------------------------------------
+     Topbar
+  ------------------------------------ */
+  .topbar__inner {
+    display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 1% 5%;
-}
-.topbar__logo {
+    padding: 12px 16px;
+  }
+  .topbar__logo {
     font-size: 1.5rem;
-}
-.topbar__btn {
+  }
+  .topbar__btn {
     padding: 6px 22px;
     font-size: 0.9rem;
-}
+  }
 
-/* Профиль + навыки */
-.profile-frame__inner {
+  /* ------------------------------------
+     Профиль
+  ------------------------------------ */
+  .profile-frame__inner {
+    display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 16px 0;
     gap: 16px;
-}
-.profile-frame__photo img {
+    padding: 16px 0;
+  }
+  .profile-frame__photo img {
     width: 220px;
     height: auto;
-}
-.profile-frame__skills {
+    border-radius: 12px;
+    object-fit: cover;
+  }
+  .profile-frame__action {
+    text-align: center;
+    padding: 12px 0;
+  }
+  .btn--primary {
+    width: 100%;
+    max-width: 300px;
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+
+  /* ------------------------------------
+     Навыки
+  ------------------------------------ */
+  .profile-frame__skills {
     width: 100%;
     max-width: 90%;
-}
-.skills-list .skill {
+  }
+  .skills-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .skills-list .skill {
     display: grid;
-    grid-template-columns: 32px 1fr;
+    grid-template-columns: 36px 1fr;
     grid-template-rows: auto auto;
-    column-gap: 12px;    /* от иконки до текста+линии */
-    row-gap: 4px;        /* между текстом и линией */
-    align-items: start;  /* иконка прижата к верху области */
+    column-gap: 12px;
+    row-gap: 4px;
+    align-items: start;
     margin-bottom: 8px;
   }
-  
   .skills-list .skill__icon {
     grid-column: 1;
-    grid-row: 1 / span 2;  /* иконка на обе строки */
+    grid-row: 1 / span 2;
     width: 36px;
     height: 36px;
   }
-  
   .skills-list .skill__name {
     grid-column: 2;
     grid-row: 1;
-    justify-self: start;   /* выровнять начало по сетке */
-    text-align: left;      /* текст внутри элемента — слева */
+    justify-self: start;
+    text-align: left;
     font-size: 0.95rem;
     line-height: 1.2;
   }
-  
   .skills-list .skill__bar {
     grid-column: 2;
     grid-row: 2;
@@ -70,159 +96,110 @@
     height: 4px;
     background: rgba(255,255,255,0.1);
     border-radius: 2px;
-    position: relative;
     overflow: hidden;
+    position: relative;
   }
-  
   .skills-list .skill__level {
     position: absolute;
     inset: 0;
-    /* ширину и цвет задают ваши .level-* классы */
+    /* ширину и цвет задают утилитарные классы .level-ps, .level-ai и т.д. */
   }
 
-/* Кнопка «Заказать дизайн» */
-.profile-frame__action {
-    width: 100%;
-    padding: 12px 0;
-    text-align: center;
-}
-.btn--primary {
-    width: 100%;
-    max-width: 300px;
-    padding: 10px 20px;
-    font-size: 1rem;
-}
-
-/* Заголовки секций */
-.section__title {
+  /* ------------------------------------
+     Заголовки секций
+  ------------------------------------ */
+  .section__title {
     font-size: 1.25rem;
     margin: 16px 0 12px;
     text-align: left;
-}
-
-/* Проекты */
-.projects {
-    display: flex;
-    gap: 12px;
-}
-.project-card {
-    position: relative;
-    width: 30%;
-    height: 90px;
-    border-radius: 12px;
-    overflow: hidden;
-}
-.project-card__img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-}
-
-/* Широкоформатная печать */
-#wide-print .container {
-    padding: 0 16px;
-}
-#wide-print .section__title {
-    text-align: left;
-    margin-top: 24px;
-}
-.section__desc {
+  }
+  .section__desc {
     font-size: 0.875rem;
     line-height: 1.4;
     margin-bottom: 12px;
     text-align: left;
+  }
+
+  /* ------------------------------------
+     Проекты
+  ------------------------------------ */
+@media (max-width: 768px) {
+  /* Секция «Проекты» в колонку */
+  .projects {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Фиксируем общую высоту карточек и центрируем контент */
+  .project-card {
+    flex: none;              /* сбрасываем десктоп-флексы */
+    width: 100%;
+    height: 100px;           /* одна высота для всех */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* Логотип внутри: padding и ограничение по размеру */
+  .project-card__logo {
+    max-height: 60%;         /* займёт не более 60% от высоты карточки */
+    max-width: 80%;          /* и не шире 80% по ширине */
+    padding: 0 16px;         /* по 16px слева/справа */
+    object-fit: contain;     /* сохраняет пропорции */
+  }
 }
 
-/* Карусель */
-.carousel-container {
-  height: 160px;
-  margin-top: 12px;
-  position: relative;
-  overflow-x: auto;            /* теперь можно свайпать по горизонтали */
-  overflow-y: hidden;          /* вертикально не скроллится */
-  -webkit-overflow-scrolling: touch;  /* инерция на iOS */
-  scroll-behavior: smooth;      /* плавный скролл */
-  display: flex;                /* чтобы track не ломался */
-  gap: var(--gap);
-  padding-bottom: 8px;          /* пространство под скрытый скроллбар */
-}
-.carousel-track {
-    gap: 8px;
-}
-.carousel-item {
+  /* ------------------------------------
+     Карусель-секции
+  ------------------------------------ */
+  /* универсальный селектор для всех секций-каруселей */
+  .carousel-container {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    cursor: grab;
+    height: 180px;
+    padding-bottom: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .carousel-container::-webkit-scrollbar {
+    display: none;
+  }
+  .carousel-track {
+    display: flex;
+    gap: 12px;
+    scroll-snap-type: inherit;
+  }
+  .carousel-item {
     flex: 0 0 auto;
-    width: 200px;
+    width: auto;
+    height: 150px;
     border-radius: 8px;
     overflow: hidden;
-}
-
-/* Лайтбокс */
-.lightbox {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.8);
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 1000;
-    cursor: pointer;
+    scroll-snap-align: start;
   }
-  .lightbox__inner {
-    position: relative;
-    cursor: auto;
-  }
-  .lightbox__img {
-    max-width: 90vw; max-height: 90vh;
-    border-radius: 8px;
+  .carousel-item img {
     display: block;
+    width: auto;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
-  .lightbox__close {
-    position: absolute; top: 8px; right: 8px;
-    width: 32px; height: 32px;
-    background: rgba(0,0,0,0.5);
-    border: none; color: #fff;
-    font-size: 1.5rem; line-height: 1;
-    border-radius: 50%;
-    cursor: pointer; z-index: 1;
-  }
-  /* Лайтбокс и стрелка закрытия */
-.lightbox {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.8);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  cursor: pointer;
-}
-.lightbox__inner {
-  position: relative;
-  cursor: auto;
-}
-.lightbox__img {
-  max-width: 90vw;
-  max-height: 90vh;
-  border-radius: 8px;
-  display: block;
-}
-.lightbox__close {
-  position: absolute; top: 8px; right: 8px;
-  width: 32px; height: 32px;
-  background: rgba(0,0,0,0.5);
-  border: none; color: #fff;
-  font-size: 1.5rem; line-height: 1;
-  border-radius: 50%; cursor: pointer;
-  z-index: 1;
-}
 
-
-
-
-
-
-/* Лайтбокс и стрелка закрытия */
-.lightbox {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.8);
+  /* ------------------------------------
+     Лайтбокс
+  ------------------------------------ */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
     display: none;
     align-items: center;
     justify-content: center;
@@ -240,84 +217,18 @@
     display: block;
   }
   .lightbox__close {
-    position: absolute; top: 8px; right: 8px;
-    width: 32px; height: 32px;
-    background: rgba(0,0,0,0.5);
-    border: none; color: #fff;
-    font-size: 1.5rem; line-height: 1;
-    border-radius: 50%; cursor: pointer;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+    border-radius: 50%;
+    cursor: pointer;
     z-index: 1;
   }
-  
-  /* Карусель: гарантируем overflow только на контейнере */
-.profile-frame__skills {
-  padding: 20px;
-}
-.carousel-container {
-  position: relative;
-  overflow-x: auto;               /* вместо hidden */
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch; /* инерция на мобильных */
-  scroll-behavior: smooth;         /* плавный переход */
-  scroll-snap-type: x mandatory;   /* опционально: прилипание */
-  cursor: grab;
-  height: 240px;                   /* оставляем вашу высоту */
-  padding-bottom: 8px;             /* место под скрытый скроллбар */
-}
-
-/* Скрываем WebKit-скроллбар */
-.carousel-container::-webkit-scrollbar {
-  display: none;
-}
-
-/* Трек становится просто flex + snap */
-.carousel-track {
-  display: flex;
-  gap: var(--gap);
-}
-.carousel-item {
-  flex: 0 0 auto;
-  height: 240px;
-  border-radius: var(--radius);
-  overflow: hidden;
-  scroll-snap-align: start;       /* опционально */
-}
-.carousel-item img {
-  display: block;
-  height: 100%;
-  width: auto;
-  object-fit: cover;
-  object-position: center;
-}
-.carousel-track {
-  display: flex;
-  gap: 16px;
-  will-change: transform;
-}
-.carousel-item {
-  flex: 0 0 auto;
-  width: auto;
-  height: auto;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.carousel-item img {
-  display: block;
-  width: auto; height: 100%;
-  object-fit: cover;
-}
-  
-/* Мобильные карточки карусели — 80% экрана каждая */
-.carousel-item {
-  width: 80vw;      /* ширина = 80% от ширины viewport */
-  height: 180px;    /* если хотите чуть поменьше, например 180px */
-}
-
-/* Optionally: покажем чуть большую область справа от первой */
-.carousel-container {
-  padding-left: 16px;    /* отступ от края экрана */
-  padding-right: 16px;   /* аналогично с права */
-}
-
-
 }

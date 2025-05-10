@@ -144,24 +144,44 @@ h2 {
 }
 
 /* Проекты */
+/* Projects block */
 .projects {
   display: flex;
-  gap: var(--gap);
+  justify-content: space-between; /* распределяем карточки по всей ширине */
+  gap: 16px;                      /* отступ между ними */
 }
+
+/* Base project-card */
 .project-card {
-  flex: 1;
-  background: var(--card);
-  border-radius: var(--radius);
-  width: 100%;
-  height: 80%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  width: 300px;           /* подгоните под ваш макет */
+  height: 150px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform .2s;
 }
-.project-card__img {
-  max-width: 100%;
+.project-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Centered logo */
+.project-card__logo {
+  max-width: 70%;
+  max-height: 70%;
   object-fit: contain;
+}
+
+/* Background colors */
+.project-card--beetroot {
+  background-color: #D32F2F;
+}
+.project-card--rodina {
+  background-color: #2D2D2D;
+}
+.project-card--ai-model {
+  background-color: #E65100;
 }
 
 /* Карусель */
