@@ -48,3 +48,4 @@ if (!('ontouchstart' in window)) {
   });
   lbInner.addEventListener('click', e => e.stopPropagation());
 })();
+
