@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Портфолио — Jpegers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header__left">
+      <img src="assets/logo_jpegers.svg" alt="Логотип Jpegers" class="logo">
+      <span class="brand"> </span>
+    </div>
+    <a class="contact-link" href="https://t.me/jpegers" target="_blank" rel="noopener noreferrer">
+      Написать в Telegram
+    </a>
+  </header>
+
+  <nav id="filters" class="filters"></nav>
+
+  <main>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <footer class="footer">
+    <a href="policy.html" target="_blank" rel="noopener noreferrer">Политика конфиденциальности</a>
+  </footer>
+
+  <!-- Лайтбокс -->
+  <div id="lightbox" class="lightbox hidden">
+    <div id="lightbox-overlay" class="lightbox__overlay"></div>
+    <img id="lightbox-img" class="lightbox__img" alt="">
+    <video id="lightbox-video" class="lightbox__video" playsinline muted loop></video>
+    <button id="lightbox-close" class="lightbox__close">✕</button>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

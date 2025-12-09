@@ -1,0 +1,250 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+  color: #f9fafb;
+}
+
+/* Шапка */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(15,23,42,0.94);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(148,163,184,0.35);
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo {
+  width: 64px;
+  height: auto;
+  object-fit: contain;
+}
+
+.brand {
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: #e5e7eb;
+}
+
+.contact-link {
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148,163,184,0.7);
+  color: #e5e7eb;
+  text-decoration: none;
+  background:
+    radial-gradient(circle at top left, rgba(56,189,248,0.35), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(139,92,246,0.3), transparent 55%);
+  transition: background 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
+}
+
+.contact-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 26px rgba(15,23,42,0.95);
+}
+
+/* Фильтры */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 16px 0;
+}
+
+.filter-btn {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  border: 1px solid rgba(148,163,184,0.5);
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease, border-color 0.1s ease;
+}
+
+.filter-btn span.count {
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+/* НЕАКТИВНАЯ кнопка "Все" — прозрачная, белая обводка */
+.filter-btn--all {
+  background: transparent;
+  color: #ffffff;
+  border: 1px solid #ffffff;
+}
+
+/* АКТИВНАЯ кнопка "Все" — белая заливка */
+.filter-btn--all.filter-btn--active {
+  background: #ffffff;
+  color: #020617;
+  border-color: transparent;
+}
+
+
+/* Цвет задаём через CSS-переменную, сам цвет подставим по data-атрибуту */
+.filter-btn--color {
+  --tag-color: #0ea5e9; /* дефолт на всякий случай */
+
+  background: transparent;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--tag-color);
+  color: var(--tag-color);
+}
+
+/* Активная цветная кнопка: заливка цветом тега */
+.filter-btn--color.filter-btn--active {
+  background: var(--tag-color);
+  color: #020617;
+}
+
+/* Привязка конкретных цветов к индексам */
+.filter-btn--color[data-color-index="0"] { --tag-color: #0ea5e9; }
+.filter-btn--color[data-color-index="1"] { --tag-color: #22c55e; }
+.filter-btn--color[data-color-index="2"] { --tag-color: #a855f7; }
+.filter-btn--color[data-color-index="3"] { --tag-color: #f97316; }
+.filter-btn--color[data-color-index="4"] { --tag-color: #ec4899; }
+.filter-btn--color[data-color-index="5"] { --tag-color: #eab308; }
+.filter-btn--color[data-color-index="6"] { --tag-color: #38bdf8; }
+
+
+/* Сетка Pinterest */
+
+.grid {
+  padding: 16px;
+  column-gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .grid { column-count: 2; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid { column-count: 3; }
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .grid { column-count: 5; }
+}
+
+@media (min-width: 1441px) {
+  .grid { column-count: 6; }
+}
+
+.card {
+  break-inside: avoid;
+  margin-bottom: 16px;
+  cursor: zoom-in;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: radial-gradient(circle at top, rgba(56,189,248,0.35), rgba(15,23,42,1));
+  box-shadow: 0 18px 45px rgba(15,23,42,0.9);
+}
+
+.card img,
+.card video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Лайтбокс */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+}
+
+.lightbox.hidden {
+  display: none;
+}
+
+.lightbox__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+}
+
+.lightbox__img {
+  position: relative;
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.9);
+}
+
+.lightbox__video {
+  position: relative;
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.9);
+  display: none;
+}
+
+
+.lightbox__close {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(15,23,42,0.88);
+  border: none;
+  color: #e5e7eb;
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Подвал */
+
+.footer {
+  padding: 24px 16px 32px;
+  font-size: 12px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.footer a {
+  color: #9ca3af;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
