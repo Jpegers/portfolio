@@ -1,25 +1,19 @@
-// ==== НАСТРОЙКА ====
-// Для локального теста медиа лежат в папке `media/`.
-// Для продакшена на R2 заменишь на публичный URL бакета, заканчивающийся на '/'.
-const MEDIA_BASE_URL = "https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev/";
+// ==== CONFIG ====
+const MEDIA_BASE_URL = "media/";
 
-// Локально tags.json лежит рядом с index.html.
-// В продакшене можно также перенести его в R2 и поменять путь в loadTags().
+// Load tags.json
 async function loadTags() {
-  const res = await fetch("https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev/tags.json");
-  if (!res.ok) {
-    throw new Error("Не удалось загрузить tags.json");
-  }
+  const res = await fetch("tags.json");
+  if (!res.ok) throw new Error("Не удалось загрузить tags.json");
   return res.json();
 }
 
-// Из имени файла вытаскиваем числовой префикс: 0001.jpeg -> 1
+// Shuffle
 function extractNumber(filename) {
   const match = filename.match(/^(\d+)/);
   return match ? parseInt(match[1], 10) : 0;
 }
 
-// Формируем массив медиа-объектов
 function buildMediaItems(tagsMap) {
   const items = Object.keys(tagsMap).map(filename => ({
     filename,
@@ -27,28 +21,24 @@ function buildMediaItems(tagsMap) {
     tags: tagsMap[filename],
   }));
 
-  // перемешиваем массив
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [items[i], items[j]] = [items[j], items[i]];
   }
-
   return items;
 }
 
-
-// Считаем количество работ по каждому тегу
+// Tag stats
 function buildTagStats(mediaItems) {
   const tagCounts = {};
   mediaItems.forEach(item => {
     item.tags.forEach(tag => {
       if (!tagCounts[tag]) tagCounts[tag] = 0;
-      tagCounts[tag] += 1;
+      tagCounts[tag]++;
     });
   });
 
   const total = mediaItems.length;
-
   const tags = Object.entries(tagCounts)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count);
@@ -56,40 +46,40 @@ function buildTagStats(mediaItems) {
   return { total, tags };
 }
 
-// Рендер фильтров
+// Render filters
 function renderFilters(container, tagStats, onFilterChange) {
   container.innerHTML = "";
 
   const makeBtn = (label, count, options = {}) => {
     const btn = document.createElement("button");
     btn.className = "filter-btn";
-    if (options.all) {
-      btn.classList.add("filter-btn--all");
-    } else {
+
+    if (options.all) btn.classList.add("filter-btn--all");
+    else {
       btn.classList.add("filter-btn--color");
-      if (typeof options.colorIndex === "number") {
-        btn.dataset.colorIndex = String(options.colorIndex);
-      }
+      btn.dataset.colorIndex = String(options.colorIndex);
     }
+
     btn.dataset.filter = options.value;
     btn.innerHTML = `#${label} <span class="count">(${count})</span>`;
     btn.addEventListener("click", () => onFilterChange(options.value));
+
     return btn;
   };
 
-  const allBtn = makeBtn("Все", tagStats.total, { all: true, value: "__all" });
-  container.appendChild(allBtn);
+  container.appendChild(makeBtn("Все", tagStats.total, { all: true, value: "__all" }));
 
   tagStats.tags.forEach((tag, idx) => {
-    const btn = makeBtn(tag.name, tag.count, {
-      value: tag.name,
-      colorIndex: idx % 7,
-    });
-    container.appendChild(btn);
+    container.appendChild(
+      makeBtn(tag.name, tag.count, {
+        value: tag.name,
+        colorIndex: idx % 7
+      })
+    );
   });
 }
 
-// Рендер сетки с учётом фильтра
+// Render grid
 function renderGrid(container, mediaItems, activeFilter) {
   container.innerHTML = "";
   const filtered = activeFilter === "__all"
@@ -99,16 +89,14 @@ function renderGrid(container, mediaItems, activeFilter) {
   filtered.forEach(item => {
     const card = document.createElement("div");
     card.className = "card";
-    card.dataset.filename = item.filename;
 
     if (/\.(mp4|webm)$/i.test(item.filename)) {
       const video = document.createElement("video");
       video.src = item.url;
       video.muted = true;
       video.loop = true;
+      video.autoplay = true;
       video.playsInline = true;
-      video.autoplay = true;              // автозапуск
-      video.setAttribute("autoplay", ""); // дублируем атрибутом
       video.loading = "lazy";
       card.appendChild(video);
     } else {
@@ -119,25 +107,12 @@ function renderGrid(container, mediaItems, activeFilter) {
       card.appendChild(img);
     }
 
-
     card.addEventListener("click", () => openLightbox(item.url));
     container.appendChild(card);
   });
 }
 
-// Подсветка активного фильтра
-function setActiveFilterButton(container, activeValue) {
-  const buttons = container.querySelectorAll(".filter-btn");
-  buttons.forEach(btn => {
-    if (btn.dataset.filter === activeValue) {
-      btn.classList.add("filter-btn--active");
-    } else {
-      btn.classList.remove("filter-btn--active");
-    }
-  });
-}
-
-// Лайтбокс
+// Lightbox
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 const lightboxVideo = document.getElementById("lightbox-video");
@@ -151,9 +126,6 @@ function openLightbox(src) {
     lightboxImg.style.display = "none";
     lightboxVideo.style.display = "block";
     lightboxVideo.src = src;
-    lightboxVideo.muted = true;
-    lightboxVideo.loop = true;
-    // маленькая защита от авто-плей проблем
     lightboxVideo.play().catch(() => {});
   } else {
     lightboxVideo.pause();
@@ -172,13 +144,11 @@ function closeLightbox() {
   lightboxVideo.src = "";
 }
 
+[lightboxOverlay, lightboxClose, lightboxImg, lightboxVideo].forEach(el =>
+  el.addEventListener("click", closeLightbox)
+);
 
-// Закрытие по клику на фон, крестик и саму картинку
-[lightboxOverlay, lightboxClose, lightboxImg, lightboxVideo].forEach(el => {
-  el.addEventListener("click", closeLightbox);
-});
-
-// Инициализация
+// Init
 (async function init() {
   const filtersEl = document.getElementById("filters");
   const gridEl = document.getElementById("grid");
@@ -202,4 +172,16 @@ function closeLightbox() {
   } catch (e) {
     console.error(e);
   }
+
+  document.getElementById("logo-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => window.location.reload(), 150);
+  });
 })();
+
+function setActiveFilterButton(container, activeValue) {
+  container.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.classList.toggle("filter-btn--active", btn.dataset.filter === activeValue);
+  });
+}
