@@ -1,12 +1,12 @@
 // ==== НАСТРОЙКА ====
 // Для локального теста медиа лежат в папке `media/`.
 // Для продакшена на R2 заменишь на публичный URL бакета, заканчивающийся на '/'.
-const MEDIA_BASE_URL = "media/";
+const MEDIA_BASE_URL = "https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev";
 
 // Локально tags.json лежит рядом с index.html.
 // В продакшене можно также перенести его в R2 и поменять путь в loadTags().
 async function loadTags() {
-  const res = await fetch("tags.json");
+  const res = await fetch("https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev/tags.json");
   if (!res.ok) {
     throw new Error("Не удалось загрузить tags.json");
   }
