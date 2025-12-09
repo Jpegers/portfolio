@@ -1,5 +1,5 @@
 // ==== CONFIG ====
-const MEDIA_BASE_URL = "https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev";
+const MEDIA_BASE_URL = "https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev/";
 
 // Load tags.json
 async function loadTags() {
