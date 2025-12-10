@@ -11,16 +11,29 @@
 html, body {
   height: 100%;
 }
-/*
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
+
+  background: linear-gradient(180deg, #050b1a 0%, #02040a 100%) fixed;
+  background-attachment: fixed; /* КЛЮЧ!!!! */
+
   color: #f9fafb;
-} */
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
+}
+
+
 
 main {
   flex: 1;
@@ -177,37 +190,11 @@ main {
 /* ========================= */
 /*           GRID            */
 /* ========================= */
-.gallery {
-    column-count: 2;
-    column-gap: 16px;
-    column-fill: auto;
-    align-content: flex-start !important;
-}
-
-.gallery img,
-.gallery video {
-    display: block;
-    width: 100%;
-}
-
-.card {
-    break-inside: avoid;
-    -webkit-column-break-inside: avoid;
-    page-break-inside: avoid;
-}
-
-@supports (-webkit-touch-callout: none) {
-    .gallery {
-        column-fill: initial;
-    }
-}
-
 
 .grid {
   padding: 16px;
   column-gap: 16px;
 }
-
 
 @media (max-width: 640px) {
   .grid { column-count: 2; }
@@ -235,7 +222,6 @@ main {
 
   background: radial-gradient(circle at top, rgba(56,189,248,0.35), rgba(15,23,42,1));
   box-shadow: 0 18px 45px rgba(15,23,42,0.9);
-   vertical-align: top;
 }
 
 /* Анимация появления */
@@ -314,6 +300,21 @@ main {
   display: none;
 }
 
+.lightbox__close {
+  position:absolute;
+  top: -3000px;
+  left: 30px;
+  background: rgba(15,23,42,0.88);
+  border: none;
+  color: #e5e7eb;
+  border-radius: 999px;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 
 /* ========================= */
@@ -348,29 +349,3 @@ main {
   .logo { width: 72px; }
   .contact-link { font-size: 12px; }
 }
-
-
-
-
-
-
-
-
-
-@supports (-webkit-touch-callout: none) {
-    html, body {
-        background-attachment: scroll;
-        background-size: 100% 100%;
-    }
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(circle at 30% 20%, rgba(0,60,255,0.12), transparent 60%),
-                radial-gradient(circle at 70% 80%, rgba(140,0,255,0.10), transparent 60%);
-    z-index: -1;
-}
-
