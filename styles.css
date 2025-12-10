@@ -9,16 +9,6 @@
 }
 
 html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-
-/* html, body {
   height: 100%;
 }
 
@@ -30,7 +20,7 @@ body {
   min-height: 100vh;
   background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
   color: #f9fafb;
-} */
+} 
 
 main {
   flex: 1;
@@ -360,23 +350,3 @@ main {
 }
 
 
-
-
-
-
-@supports (-webkit-touch-callout: none) {
-    html, body {
-        background-attachment: scroll;
-        background-size: 100% 100%;
-    }
-}
-
-body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(circle at 30% 20%, rgba(0,60,255,0.12), transparent 60%),
-                radial-gradient(circle at 70% 80%, rgba(140,0,255,0.10), transparent 60%);
-    z-index: -1;
-}
