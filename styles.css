@@ -261,18 +261,6 @@ main {
   height: auto;
 }
 
-.media-wrap {
-  width: 100%;
-  display: block;
-}
-
-.media-wrap img,
-.media-wrap video {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 /* Плавная и "живая" анимация */
 @keyframes cardSoftAppear {
   0% {
@@ -413,3 +401,14 @@ main {
 
 
 
+.media-wrap {
+  width: 100%;
+  display: block;
+}
+
+.media-wrap img,
+.media-wrap video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
