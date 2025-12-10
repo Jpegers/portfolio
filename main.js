@@ -160,41 +160,35 @@ function closeLightbox() {
 );
 
 // Init
-async function renderGallery(items) {
-    const container = document.querySelector('.gallery');
-    container.innerHTML = "";
+async function init() {
+  const filtersEl = document.getElementById("filters");
+  const gridEl = document.getElementById("grid");
 
-    const loadPromises = [];
+  try {
+    const tagsMap = await loadTags();
+    const mediaItems = buildMediaItems(tagsMap);
+    const tagStats = buildTagStats(mediaItems);
 
-    items.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'card';
+    let activeFilter = "__all";
 
-        let media;
+    const onFilterChange = (value) => {
+      activeFilter = value;
+      setActiveFilterButton(filtersEl, activeFilter);
+      renderGrid(gridEl, mediaItems, activeFilter);
+    };
 
-        if (item.type === "image") {
-            media = document.createElement('img');
-            media.src = item.src;
-        } else {
-            media = document.createElement('video');
-            media.src = item.src;
-            media.muted = true;
-            media.loop = true;
-            media.playsInline = true;
-        }
+    renderFilters(filtersEl, tagStats, onFilterChange);
+    setActiveFilterButton(filtersEl, activeFilter);
+    renderGrid(gridEl, mediaItems, activeFilter);
+  } catch (e) {
+    console.error(e);
+  }
 
-        card.appendChild(media);
-        container.appendChild(card);
-
-        loadPromises.push(waitForMediaLoad(media));
-    });
-
-    // ⬇⬇⬇ ВАЖНО: ждём прогрузки всех медиа
-    await Promise.all(loadPromises);
-
-    // запускаем пересчёт колонок (Safari fix)
-    container.style.columnCount = getComputedStyle(container).columnCount;
-}
+  document.getElementById("logo-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => window.location.reload(), 150);
+  });
 
 
 
