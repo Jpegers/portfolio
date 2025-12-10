@@ -37,6 +37,9 @@ body::before {
 
 main {
   flex: 1;
+  
+    background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
+  padding-bottom: 120px;
 }
 
 /* ========================= */
