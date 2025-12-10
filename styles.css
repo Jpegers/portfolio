@@ -216,25 +216,16 @@ main {
 }
 
 .card {
-    break-inside: avoid;
-    cursor: zoom-in;
-    border-radius: 18px;
-    overflow: hidden;
-    background: radial-gradient(circle at top, rgba(56,189,248,0.35), rgba(15,23,42,1));
-    box-shadow: 0 18px 45px rgba(15,23,42,0.9);
+  break-inside: avoid;
+  margin-bottom: 16px;
+  cursor: zoom-in;
+
+  border-radius: 18px;
+  overflow: hidden;
+
+  box-shadow: 0 8px 16px rgba(8, 7, 74, 0.9);
 }
 
-.grid {
-  padding: 16px;
-  column-gap: 16px;
-  --row-gap: 16px;
-
-  display: block;
-}
-
-.card {
-  margin-bottom: var(--row-gap);
-}
 
 /* Анимация появления */
 /* Стартовое состояние */
