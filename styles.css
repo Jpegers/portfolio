@@ -181,7 +181,10 @@ main {
 .grid {
   padding: 16px;
   column-gap: 16px;
+  width: 100%;         /* фиксирует ширину */
+  display: block;      /* отключает inline-block режим */
 }
+
 
 @media (max-width: 640px) {
   .grid { column-count: 2; }
