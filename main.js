@@ -112,7 +112,11 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
       img.src = item.url;
       img.loading = "lazy";
       img.alt = "";
-      card.appendChild(img);
+      const inner = document.createElement("div");
+      inner.className = "card-inner";
+      inner.appendChild(img);
+
+      card.appendChild(inner);
       mediaEl = img;
     }
 
@@ -139,7 +143,7 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
 }
 
 function sizeCardWhenReady(card, mediaEl) {
-  const resize = () => updateCardSpan(card, mediaEl);
+  const resize = () => updateCardSpan(card);
 
   if (mediaEl.tagName === "IMG" && mediaEl.complete) {
     requestAnimationFrame(resize);
@@ -157,24 +161,23 @@ function sizeCardWhenReady(card, mediaEl) {
   }, 1200);
 }
 
-function updateCardSpan(card, mediaEl) {
+function updateCardSpan(card) {
   const grid = card.parentElement;
   if (!grid) return;
 
-   // если высота уже рассчитана — повторный вызов не нужен
-  if (card.dataset.spanned === "1") return;
-
   const styles = getComputedStyle(grid);
-  const rowHeight = parseFloat(styles.getPropertyValue("--grid-row-height")) || 12;
-  const gap = parseFloat(styles.getPropertyValue("--grid-gap")) || 12;
-  const mediaHeight = mediaEl.getBoundingClientRect().height;
+  const rowHeight = parseFloat(styles.getPropertyValue("grid-auto-rows")) || 12;
+  const gap = parseFloat(styles.getPropertyValue("gap")) || 12;
 
-  if (!mediaHeight) return;
+  // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ — УБИРАЕМ ДРОБНЫЕ PX
+  const cardHeight = Math.round(card.getBoundingClientRect().height);
+  if (!cardHeight) return;
 
-  const span = Math.max(1, Math.ceil((mediaHeight + gap) / (rowHeight + gap)));
+  const span = Math.ceil((cardHeight + gap) / (rowHeight + gap));
   card.style.gridRowEnd = `span ${span}`;
-  card.dataset.spanned = "1";
 }
+
+
 
 // Lightbox
 const lightbox = document.getElementById("lightbox");
@@ -226,7 +229,7 @@ function recalcGridSpans(gridEl) {
     const mediaEl = card.querySelector("img, video");
     if (mediaEl) {
       card.dataset.spanned = "0";
-      updateCardSpan(card, mediaEl);
+      updateCardSpan(card);
     }
   });
 }
