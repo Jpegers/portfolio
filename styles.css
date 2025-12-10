@@ -365,3 +365,8 @@ main {
   }
 }
 
+@supports (-webkit-touch-callout: none) {
+  img, video {
+    content-visibility: auto;
+  }
+}
