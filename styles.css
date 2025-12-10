@@ -358,3 +358,11 @@ main {
   .logo { width: 72px; }
   .contact-link { font-size: 12px; }
 }
+
+@supports (-webkit-touch-callout: none) {
+    html, body {
+        background-attachment: scroll;
+        background-size: 100% 100%;
+    }
+}
+
