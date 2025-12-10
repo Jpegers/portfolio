@@ -355,3 +355,13 @@ main {
 
 
 
+
+
+@supports (-webkit-touch-callout: none) {
+  .card {
+    contain: paint;
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+  }
+}
+
