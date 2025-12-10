@@ -355,18 +355,19 @@ main {
 
 
 
-
-
 @supports (-webkit-touch-callout: none) {
   .card {
     contain: paint;
     -webkit-transform: translateZ(0);
+    transform: translateZ(0); /* нормализованный вариант */
     will-change: transform;
+  }
+
+  img,
+  video {
+    content-visibility: auto;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 }
 
-@supports (-webkit-touch-callout: none) {
-  img, video {
-    content-visibility: auto;
-  }
-}
