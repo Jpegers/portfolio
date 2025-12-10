@@ -178,15 +178,30 @@ main {
 /*           GRID            */
 /* ========================= */
 .gallery {
+    column-count: 2;
+    column-gap: 16px;
     column-fill: auto;
+    align-content: flex-start !important;
+}
+
+.gallery img,
+.gallery video {
+    display: block;
+    width: 100%;
+}
+
+.card {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    page-break-inside: avoid;
 }
 
 @supports (-webkit-touch-callout: none) {
     .gallery {
         column-fill: initial;
-        break-inside: avoid-column;
     }
 }
+
 
 .grid {
   padding: 16px;
