@@ -94,6 +94,9 @@ card.className = "card";
 const inner = document.createElement("div");
 inner.className = "card-inner";
 
+let mediaWrap = document.createElement("div");
+mediaWrap.className = "media-wrap";
+
 if (/\.(mp4|webm)$/i.test(item.filename)) {
   const video = document.createElement("video");
   video.src = item.url;
@@ -102,28 +105,16 @@ if (/\.(mp4|webm)$/i.test(item.filename)) {
   video.autoplay = true;
   video.playsInline = true;
   video.loading = "lazy";
-
-  
-  const wrap = document.createElement("div");
-wrap.className = "media-wrap";
-wrap.appendChild(video);
-card.appendChild(wrap);
-
-  
+  mediaWrap.appendChild(video);
 } else {
   const img = document.createElement("img");
   img.src = item.url;
   img.loading = "lazy";
   img.alt = "";
-
-  
-  const wrap = document.createElement("div");
-wrap.className = "media-wrap";
-wrap.appendChild(img);
-card.appendChild(wrap);
-
-  
+  mediaWrap.appendChild(img);
 }
+
+card.appendChild(mediaWrap);
 
 // кликаем по всей карточке
 card.addEventListener("click", () => openLightbox(item.url));
