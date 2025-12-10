@@ -87,34 +87,41 @@ function renderGrid(container, mediaItems, activeFilter) {
     : mediaItems.filter(item => item.tags.includes(activeFilter));
 
   filtered.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "card";
+   const card = document.createElement("div");
+card.className = "card";
 
-    if (/\.(mp4|webm)$/i.test(item.filename)) {
-      const video = document.createElement("video");
-      video.src = item.url;
-      video.muted = true;
-      video.loop = true;
-      video.autoplay = true;
-      video.playsInline = true;
-      video.loading = "lazy";
-      card.appendChild(video);
-    } else {
-      const img = document.createElement("img");
-      img.src = item.url;
-      img.loading = "lazy";
-      img.alt = "";
-      card.appendChild(img);
-    }
+// внутренняя обёртка
+const inner = document.createElement("div");
+inner.className = "card-inner";
 
-    card.addEventListener("click", () => openLightbox(item.url));
-    container.appendChild(card);
+if (/\.(mp4|webm)$/i.test(item.filename)) {
+  const video = document.createElement("video");
+  video.src = item.url;
+  video.muted = true;
+  video.loop = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  video.loading = "lazy";
+  inner.appendChild(video);
+} else {
+  const img = document.createElement("img");
+  img.src = item.url;
+  img.loading = "lazy";
+  img.alt = "";
+  inner.appendChild(img);
+}
 
-    
-    // Анимация карточек: случайная задержка 0.3–0.7 сек
+// кликаем по всей карточке
+card.addEventListener("click", () => openLightbox(item.url));
+
+// вкладываем inner внутрь card
+card.appendChild(inner);
+container.appendChild(card);
+
+// анимация — остаётся на .card
 requestAnimationFrame(() => {
-  const delay = 0.2 + Math.random() * 0.8; // 0.3 → 0.7 сек
-  card.style.animationDelay = `${delay}s`;
+  const delay = 0.2 + Math.random() * 0.8;
+  card.style.animationDelay = ${delay}s;
   card.classList.add("anim-start");
 });
 
