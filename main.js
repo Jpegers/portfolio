@@ -160,7 +160,7 @@ function closeLightbox() {
 );
 
 // Init
-async function init() {
+(async function init() {
   const filtersEl = document.getElementById("filters");
   const gridEl = document.getElementById("grid");
 
