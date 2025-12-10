@@ -109,6 +109,17 @@ function renderGrid(container, mediaItems, activeFilter) {
 
     card.addEventListener("click", () => openLightbox(item.url));
     container.appendChild(card);
+
+    
+    // Анимация карточек: случайная задержка 0.3–0.7 сек
+requestAnimationFrame(() => {
+  const delay = 0.2 + Math.random() * 0.8; // 0.3 → 0.7 сек
+  card.style.animationDelay = `${delay}s`;
+  card.classList.add("anim-start");
+});
+
+
+
   });
 }
 
@@ -178,6 +189,32 @@ function closeLightbox() {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => window.location.reload(), 150);
   });
+
+
+  
+
+  // ==== Скролл-анимация хедера ====
+let lastScroll = 0;
+const header = document.querySelector(".header-blur");
+
+window.addEventListener("scroll", () => {
+  const current = window.scrollY;
+
+  if (current > lastScroll && current > 80) {
+    // Скролл вниз — скрываем
+    header.classList.add("header-hidden");
+  } else {
+    // Скролл вверх — показываем
+    header.classList.remove("header-hidden");
+  }
+
+  lastScroll = current;
+
+  
+
+  
+});
+
 })();
 
 function setActiveFilterButton(container, activeValue) {
