@@ -181,13 +181,6 @@ main {
 .grid {
   padding: 16px;
   column-gap: 16px;
-  width: 100%;         /* фиксирует ширину */
-  display: block;      /* отключает inline-block режим */
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
 }
 
 
