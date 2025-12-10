@@ -102,13 +102,27 @@ if (/\.(mp4|webm)$/i.test(item.filename)) {
   video.autoplay = true;
   video.playsInline = true;
   video.loading = "lazy";
-  inner.appendChild(video);
+
+  
+  const wrap = document.createElement("div");
+wrap.className = "media-wrap";
+wrap.appendChild(video);
+card.appendChild(wrap);
+
+  
 } else {
   const img = document.createElement("img");
   img.src = item.url;
   img.loading = "lazy";
   img.alt = "";
-  inner.appendChild(img);
+
+  
+  const wrap = document.createElement("div");
+wrap.className = "media-wrap";
+wrap.appendChild(img);
+card.appendChild(wrap);
+
+  
 }
 
 // кликаем по всей карточке
