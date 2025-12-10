@@ -177,6 +177,16 @@ main {
 /* ========================= */
 /*           GRID            */
 /* ========================= */
+.gallery {
+    column-fill: auto;
+}
+
+@supports (-webkit-touch-callout: none) {
+    .gallery {
+        column-fill: initial;
+        break-inside: avoid-column;
+    }
+}
 
 .grid {
   padding: 16px;
