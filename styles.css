@@ -217,7 +217,6 @@ main {
 
 .card {
   break-inside: avoid;
-  margin-bottom: 16px;
   cursor: zoom-in;
 
   border-radius: 18px;
