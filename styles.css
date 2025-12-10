@@ -274,7 +274,7 @@ main {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   grid-auto-rows: var(--grid-row-height);
   gap: var(--grid-gap);
-  align-items: start;
+  align-items: flex-start;
 }
 
 @media (max-width: 640px) {
