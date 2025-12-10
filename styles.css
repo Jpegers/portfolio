@@ -9,6 +9,16 @@
 }
 
 html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* html, body {
   height: 100%;
 }
 
@@ -20,7 +30,7 @@ body {
   min-height: 100vh;
   background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
   color: #f9fafb;
-}
+} */
 
 main {
   flex: 1;
