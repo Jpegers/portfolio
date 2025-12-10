@@ -188,8 +188,9 @@ function closeLightbox() {
     setActiveFilterButton(filtersEl, activeFilter);
     renderGrid(gridEl, mediaItems, activeFilter);
   } catch (e) {
-    console.error(e);
-  }
+  console.error(e);
+  gridEl.innerHTML = "<p style='padding:16px;opacity:.7'>Ошибка загрузки работ. Попробуйте обновить страницу.</p>";
+}
 
   document.getElementById("logo-link").addEventListener("click", (e) => {
     e.preventDefault();
