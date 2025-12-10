@@ -195,29 +195,29 @@ main {
 /* ========================= */
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
   padding: 16px;
-  padding-top: 40px; /* можно 48 */
+  column-gap: 16px;
 }
 
-@media (min-width: 641px) {
-  .grid { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 640px) {
+  .grid { column-count: 2; }
 }
 
-@media (min-width: 1025px) {
-  .grid { grid-template-columns: repeat(5, 1fr); }
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid { column-count: 3; }
+}
+
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .grid { column-count: 5; }
 }
 
 @media (min-width: 1441px) {
-  .grid { grid-template-columns: repeat(6, 1fr); }
+  .grid { column-count: 6; }
 }
 
 .card {
-  break-inside: avoid-column;
-  width: 100%;
-  
+  break-inside: avoid;
+  margin-bottom: 16px;
   cursor: zoom-in;
 
   border-radius: 18px;
