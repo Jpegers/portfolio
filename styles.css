@@ -135,6 +135,7 @@ main {
   flex-wrap: wrap;
   gap: 8px;
   padding: 10px 16px 0;
+  margin-top: 16px;
 }
 
 .filter-btn {
@@ -196,7 +197,7 @@ main {
 
 .grid {
   padding: 16px;
-  column-gap: 16px;
+  margin-top: 16px;
 }
 
 @media (max-width: 640px) {
@@ -356,18 +357,19 @@ main {
 
 
 @supports (-webkit-touch-callout: none) {
+
   .card {
-    contain: paint;
     -webkit-transform: translateZ(0);
-    transform: translateZ(0); /* нормализованный вариант */
+    transform: translateZ(0);
     will-change: transform;
   }
 
   img,
   video {
-    content-visibility: auto;
+    content-visibility: visible !important;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
 }
+
 
