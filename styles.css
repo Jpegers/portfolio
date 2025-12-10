@@ -215,50 +215,24 @@ main {
   .grid { column-count: 6; }
 }
 
-/* Элемент, который участвует в колонках */
 .card {
   break-inside: avoid;
+  margin-bottom: 16px;
   cursor: zoom-in;
-}
 
-/* Внутренняя «плитка» с фоном, скруглением и тенью */
-.card-inner {
-  margin-bottom: 16px; /* ОТСТУП ПЕРЕЕХАЛ СЮДА */
   border-radius: 18px;
   overflow: hidden;
 
   background: radial-gradient(circle at top, rgba(56,189,248,0.35), rgba(15,23,42,1));
-  box-shadow: 0 18px 45px rgba(15,23,42,0.9);
+  box-shadow: 0 12px 24px rgba(13, 2, 42, 0.8);
 }
 
-/* Анимация остаётся на .card */
+/* Анимация появления */
+/* Стартовое состояние */
 .card.anim-start {
   opacity: 0;
   transform: translateY(6px) scale(0.96);
   animation: cardSoftAppear 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes cardSoftAppear {
-  0% {
-    opacity: 0;
-    transform: translateY(6px) scale(0.96);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(0) scale(1.015);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Медиа — внутрь card-inner */
-.card-inner img,
-.card-inner video {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 
 /* Плавная и "живая" анимация */
@@ -380,9 +354,6 @@ main {
 }
 
 
-
-
-
 @supports (-webkit-touch-callout: none) {
 
   .card {
@@ -397,18 +368,4 @@ main {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
-}
-
-
-
-.media-wrap {
-  width: 100%;
-  display: block;
-}
-
-.media-wrap img,
-.media-wrap video {
-  width: 100%;
-  height: auto;
-  display: block;
 }
