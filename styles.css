@@ -349,3 +349,11 @@ main {
   .logo { width: 72px; }
   .contact-link { font-size: 12px; }
 }
+
+@supports (-webkit-touch-callout: none) {
+  .card.anim-start {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
