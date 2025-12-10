@@ -196,6 +196,7 @@ main {
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   padding: 16px;
+  padding-top: 40px; /* можно 48 */
 }
 
 @media (min-width: 641px) {
