@@ -27,7 +27,7 @@
       background: rgba(0,0,0,0.65);
       backdrop-filter: blur(10px);
       border-radius: 14px;
-      padding: 18px 22px;
+      padding: 4px 22px  18px 22px;
       color: #fff;
       font-size: 14px;
       line-height: 1.45;
