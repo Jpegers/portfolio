@@ -37,40 +37,68 @@
     }
 
     .cookie-actions {
-      margin-top: 12px;
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
+  margin-top: 14px;
 
-    .cookie-link {
-      color: #38bdf8;
-      font-size: 13px;
-      text-decoration: underline dotted;
-      opacity: .85;
-    }
-    .cookie-link:hover {
-      opacity: 1;
-    }
+  display: flex;
+  justify-content: flex-start; /* выравниваем всё влево */
+  align-items: center;         /* выравниваем по одной линии */
+  gap: 14px;                   /* расстояние между кнопками */
+}
 
-    #cookie-accept {
-      background: #0ea5e9;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 999px;
-      cursor: pointer;
-      color: #020617;
-      font-weight: 600;
-      font-size: 14px;
+#cookie-accept {
+  background: #0ea5e9;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
 
-      box-shadow: 0 0 12px rgba(56,189,248,.35);
-      transition: background .15s, box-shadow .2s, transform .12s;
-    }
-    #cookie-accept:hover {
-      background: #38bdf8;
-      box-shadow: 0 0 20px rgba(56,189,248,.45);
-      transform: translateY(-2px);
-    }
+  color: #ffffff;              /* белый текст */
+  font-weight: 600;
+  font-size: 14px;
+
+  box-shadow: 0 0 12px rgba(56,189,248,.35);
+  transition: background .15s, box-shadow .2s, transform .12s;
+}
+
+#cookie-accept:hover {
+  background: #38bdf8;
+  box-shadow: 0 0 20px rgba(56,189,248,.45);
+  transform: translateY(-2px);
+}
+
+.cookie-link {
+  color: #38bdf8;
+  font-size: 14px;
+  text-decoration: underline dotted;
+  opacity: .85;
+
+  margin-left: 0;
+}
+
+.cookie-link:hover {
+  opacity: 1;
+}
+
+.cookie-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Кнопка "Хорошо" — теперь первая */
+#cookie-accept {
+  order: 1;
+}
+
+/* Кнопка "Подробнее" — теперь вторая */
+.cookie-link {
+  order: 2;
+}
+
+
+
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(12px); }
@@ -91,23 +119,24 @@
     padding: 16px 18px;
   }
 
-  .cookie-actions {
-    flex-direction: column-reverse;
-    align-items: stretch;
-    gap: 8px;
-    margin-top: 14px;
+ .cookie-actions {
+    flex-direction: column;
+    align-items: stretch;   /* чтобы кнопка “Хорошо” была широкой */
+    gap: 10px;
   }
 
   #cookie-accept {
-    width: 100%;
+    order: 1;
+    width: 100%;            /* широкая кнопка наверху */
     text-align: center;
   }
 
   .cookie-link {
-    text-align: center;
-    display: block;
+    order: 2;
+    text-align: center;     /* снизу, по центру */
     width: 100%;
   }
+}
 }
 
   `;
