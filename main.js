@@ -8,6 +8,11 @@ async function loadTags() {
   return res.json();
 }
 
+// --- URL PARAMETERS ---
+const params = new URLSearchParams(window.location.search);
+const tagFromURL = params.get("tag");
+const mediaFromURL = params.get("media");
+
 // Shuffle
 function extractNumber(filename) {
   const match = filename.match(/^(\d+)/);
@@ -79,6 +84,9 @@ function renderFilters(container, tagStats, onFilterChange) {
   });
 }
 
+if (tagFromURL && tagStats.tags.some(t => t.name === tagFromURL)) {
+  activeFilter = tagFromURL;
+}
 
 
 // Render grid
@@ -93,7 +101,7 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
   filtered.forEach(item => {
     const card = document.createElement("div");
     card.className = "card";
-    card.style.gridRowEnd = "span 20"; // базовый span, чтобы карточка была видна до перерасчёта
+      card.style.gridRowEnd = "span 1";
 
     let mediaEl;
 
@@ -145,11 +153,11 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
 function sizeCardWhenReady(card, mediaEl) {
   const resize = () => updateCardSpan(card);
 
-  if (mediaEl.tagName === "IMG" && mediaEl.complete) {
-    requestAnimationFrame(resize);
-  } else if (mediaEl.tagName === "VIDEO" && mediaEl.readyState >= 2) {
-    requestAnimationFrame(resize);
-  }
+  if (mediaEl.tagName === "IMG") {
+    mediaEl.decode?.().then(() => resize()).catch(() => resize());
+} else if (mediaEl.readyState >= 2) {
+    resize();
+}
 
   mediaEl.addEventListener("load", resize, { once: true });
   mediaEl.addEventListener("loadedmetadata", resize, { once: true });
@@ -169,13 +177,21 @@ function updateCardSpan(card) {
   const rowHeight = parseFloat(styles.getPropertyValue("grid-auto-rows")) || 12;
   const gap = parseFloat(styles.getPropertyValue("gap")) || 12;
 
-  // КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ — УБИРАЕМ ДРОБНЫЕ PX
-  const cardHeight = Math.round(card.getBoundingClientRect().height);
+  // временно отключаем scale/transform для честного замера
+  const prevTransform = card.style.transform;
+  card.style.transform = "none";
+
+  const cardHeight = Math.ceil(card.getBoundingClientRect().height);
+
+  // возвращаем transform
+  card.style.transform = prevTransform;
+
   if (!cardHeight) return;
 
   const span = Math.ceil((cardHeight + gap) / (rowHeight + gap));
   card.style.gridRowEnd = `span ${span}`;
 }
+
 
 
 
@@ -260,6 +276,10 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
     let activeFilter = "__all";
     let introHidden = false;
 
+    // --- APPLY ?tag= FILTER ---
+    if (tagFromURL && tagStats.tags.some(t => t.name === tagFromURL)) {
+        activeFilter = tagFromURL;
+}
     const hideIntroOnce = () => {
       if (introHidden) return;
       introHidden = true;
@@ -272,13 +292,26 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
       renderGrid(gridEl, mediaItems, activeFilter);
     };
 
+
+    // --- APPLY ?media= OPEN LIGHTBOX ---
+    if (mediaFromURL) {
+        const fullPath = MEDIA_BASE_URL + mediaFromURL;
+        setTimeout(() => {
+            openLightbox(fullPath);
+        }, 600);
+    }
+
     renderFilters(filtersEl, tagStats, onFilterChange);
     setActiveFilterButton(filtersEl, activeFilter);
     renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
       waitForMediaBatch(mediaNodes).then(hideIntroOnce);
     });
 
-    window.addEventListener("resize", () => recalcGridSpans(gridEl));
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => recalcGridSpans(gridEl), 150);
+});
 
     setTimeout(hideIntroOnce, 4800);
   } catch (e) {
@@ -309,9 +342,6 @@ window.addEventListener("scroll", () => {
   }
 
   lastScroll = current;
-
-  
-
   
 });
 
