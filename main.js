@@ -84,10 +84,6 @@ function renderFilters(container, tagStats, onFilterChange) {
   });
 }
 
-if (tagFromURL && tagStats.tags.some(t => t.name === tagFromURL)) {
-  activeFilter = tagFromURL;
-}
-
 
 // Render grid
 function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
