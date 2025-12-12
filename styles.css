@@ -33,15 +33,11 @@ body::before {
   background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
 }
 
-
-
 main {
   flex: 1;
-  
-    background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
+  background: linear-gradient(180deg, #050b1a 0%, #02040a 100%);
   padding-bottom: 120px;
 }
-
 
 /* Intro screen */
 .intro-screen {
@@ -108,9 +104,6 @@ main {
   100% { transform: translateX(60%); }
 }
 
-
-
-
 /* ========================= */
 /*         HEADER            */
 /* ========================= */
@@ -128,8 +121,7 @@ main {
 
   padding: 12px 0;
 
-    transition: transform 0.25s ease;
-
+  transition: transform 0.25s ease;
 }
 
 .header-hidden {
@@ -145,12 +137,6 @@ main {
   justify-content: space-between;
   align-items: center;
 }
-
-
-
-
-
-
 
 .logo {
   width: 96px;
@@ -260,39 +246,27 @@ main {
 .filter-btn--color[data-color-index="6"] { --tag-color: #38bdf8; }
 
 /* ========================= */
-/*           GRID            */
+/*      PINTEREST GRID       */
+/*  (JS Masonry, no columns) */
 /* ========================= */
 
 .grid {
   --grid-gap: 12px;
-  --grid-row-height: 12px;
 
   padding: 10px 16px 0;
   margin-top: 24px;
 
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  grid-auto-rows: var(--grid-row-height);
-  gap: var(--grid-gap);
-  align-items: flex-start;
+  /* ключ: контейнер для absolute карточек */
+  position: relative;
 }
 
-@media (max-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  }
-}
-
-@media (min-width: 1025px) {
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-}
-
-
-
+/* карточка теперь позиционируется JS'ом */
 .card {
-  break-inside: avoid;
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: 200px; /* JS перезапишет */
   cursor: zoom-in;
 
   border-radius: 18px;
@@ -300,35 +274,24 @@ main {
 
   background: radial-gradient(circle at top, rgba(56,189,248,0.35), rgba(15,23,42,1));
   box-shadow: 0 12px 24px rgba(13, 2, 42, 0.8);
+
+  transform: translate3d(0,0,0);
+  will-change: transform;
+
+  /* чтобы не мигало до первого layout */
+  visibility: hidden;
 }
 
-
-/* Анимация появления */
-/* Стартовое состояние */
-.card.anim-start {
-  opacity: 0;
-  transform: translateY(6px) scale(0.96);
-  animation: cardSoftAppear 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.card.is-measured {
+  visibility: visible;
 }
 
-/* Плавная и "живая" анимация */
-@keyframes cardSoftAppear {
-  0% {
-    opacity: 0;
-    transform: translateY(6px) scale(0.96);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(0) scale(1.015); /* маленький оверсут */
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.card-inner {
+  border-radius: 18px;
+  overflow: hidden;
 }
 
-
-
+/* Медиа */
 .card img,
 .card video {
   display: block;
@@ -336,6 +299,33 @@ main {
   height: auto;
 }
 
+/* ========================= */
+/*     Анимация появления     */
+/*  (НЕ трогаем transform card) */
+/* ========================= */
+
+/* ВАЖНО: transform карточки занят Masonry (translate3d),
+   поэтому анимацию делаем через opacity + легкий scale на inner */
+.card.anim-start .card-inner {
+  opacity: 0;
+  transform: translateY(6px) scale(0.985);
+  animation: cardSoftAppear 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardSoftAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 /* ========================= */
 /*         LIGHTBOX          */
@@ -350,7 +340,6 @@ main {
   z-index: 9999; /* Всегда выше хедера и сетки */
 }
 
-
 .lightbox.hidden {
   display: none;
 }
@@ -359,9 +348,8 @@ main {
   position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.5);
-   z-index: 1;
+  z-index: 1;
 }
-
 
 .lightbox__img,
 .lightbox__video {
@@ -395,7 +383,6 @@ main {
   justify-content: center;
 }
 
-
 /* ========================= */
 /*          FOOTER           */
 /* ========================= */
@@ -412,8 +399,6 @@ main {
   text-decoration: underline dotted;
 }
 
-
-
 /* ========================= */
 /*         ADAPTIVE          */
 /* ========================= */
@@ -429,9 +414,7 @@ main {
   .contact-link { font-size: 12px; }
 }
 
-
 @supports (-webkit-touch-callout: none) {
-
   .card {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
@@ -445,4 +428,3 @@ main {
     transform: translateZ(0);
   }
 }
- 
