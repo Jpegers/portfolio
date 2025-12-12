@@ -263,8 +263,8 @@ main {
 /* карточка теперь позиционируется JS'ом */
 .card {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 0 auto;
+  top: 0 auto;
 
   width: 200px; /* JS перезапишет */
   cursor: zoom-in;
@@ -428,4 +428,3 @@ main {
     transform: translateZ(0);
   }
 }
- 
