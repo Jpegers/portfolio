@@ -84,10 +84,113 @@ function renderFilters(container, tagStats, onFilterChange) {
   });
 }
 
+function setActiveFilterButton(container, activeValue) {
+  container.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.classList.toggle("filter-btn--active", btn.dataset.filter === activeValue);
+  });
+}
 
-// Render grid
+/* ==========================================
+   PINTEREST MASONRY ENGINE (Safari iOS safe)
+========================================== */
+
+function getColumnCount() {
+  const w = window.innerWidth;
+  if (w <= 640) return 2;      // mobile
+  if (w <= 1024) return 3;     // tablet
+  if (w <= 1280) return 4;     // small desktop
+  if (w <= 1536) return 5;     // desktop+
+  return 6;                    // wide
+}
+
+function getGap(gridEl) {
+  const styles = getComputedStyle(gridEl);
+  const gap = parseFloat(styles.getPropertyValue("--grid-gap"));
+  return Number.isFinite(gap) ? gap : 12;
+}
+
+let layoutRaf = 0;
+function scheduleLayout(gridEl) {
+  if (!gridEl) return;
+  cancelAnimationFrame(layoutRaf);
+  layoutRaf = requestAnimationFrame(() => layoutMasonry(gridEl));
+}
+
+function layoutMasonry(gridEl) {
+  if (!gridEl) return;
+
+  const cards = Array.from(gridEl.querySelectorAll(".card"));
+  if (!cards.length) {
+    gridEl.style.height = "0px";
+    return;
+  }
+
+  const gap = getGap(gridEl);
+  const cols = getColumnCount();
+
+  const rect = gridEl.getBoundingClientRect();
+  const styles = getComputedStyle(gridEl);
+  const padL = parseFloat(styles.paddingLeft) || 0;
+  const padR = parseFloat(styles.paddingRight) || 0;
+
+  const innerWidth = Math.max(0, Math.floor(rect.width - padL - padR));
+  const colWidth = Math.max(120, Math.floor((innerWidth - gap * (cols - 1)) / cols));
+
+  const colHeights = new Array(cols).fill(0);
+
+  for (const card of cards) {
+    card.style.width = `${colWidth}px`;
+
+    // важный момент: меряем после установки width
+    const h = Math.ceil(card.getBoundingClientRect().height);
+
+    // выбираем самую короткую колонку (Pinterest)
+    let target = 0;
+    for (let i = 1; i < cols; i++) {
+      if (colHeights[i] < colHeights[target]) target = i;
+    }
+
+    const x = (colWidth + gap) * target;
+    const y = colHeights[target];
+
+    card.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    card.classList.add("is-measured");
+
+    colHeights[target] = y + h + gap;
+  }
+
+  const height = Math.max(...colHeights) - gap;
+  gridEl.style.height = `${Math.max(0, Math.ceil(height))}px`;
+}
+
+function bindMasonryObservers(gridEl) {
+  if (!gridEl) return;
+
+  // ResizeObserver: пересчёт при изменениях размеров карточек (видео/шрифты/ленивые картинки)
+  const ro = new ResizeObserver(() => scheduleLayout(gridEl));
+  ro.observe(gridEl);
+
+  const observeCards = () => {
+    gridEl.querySelectorAll(".card").forEach(card => ro.observe(card));
+  };
+
+  // Resize окна
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => scheduleLayout(gridEl), 80);
+  }, { passive: true });
+
+  return { ro, observeCards };
+}
+
+/* =========================
+   Render grid (masonry)
+========================= */
+
 function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
   container.innerHTML = "";
+
   const filtered = activeFilter === "__all"
     ? mediaItems
     : mediaItems.filter(item => item.tags.includes(activeFilter));
@@ -97,7 +200,10 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
   filtered.forEach(item => {
     const card = document.createElement("div");
     card.className = "card";
-      card.style.gridRowEnd = "span 1";
+
+    // единая оболочка для анимации (и для img, и для video)
+    const inner = document.createElement("div");
+    inner.className = "card-inner";
 
     let mediaEl;
 
@@ -109,89 +215,62 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
       video.autoplay = true;
       video.playsInline = true;
       video.preload = "metadata";
-      card.appendChild(video);
+      inner.appendChild(video);
       mediaEl = video;
     } else {
       const img = document.createElement("img");
       img.src = item.url;
       img.loading = "lazy";
       img.alt = "";
-      const inner = document.createElement("div");
-      inner.className = "card-inner";
       inner.appendChild(img);
-
-      card.appendChild(inner);
       mediaEl = img;
     }
+
+    card.appendChild(inner);
 
     card.addEventListener("click", () => openLightbox(item.url));
     container.appendChild(card);
     createdMedia.push(mediaEl);
 
-    sizeCardWhenReady(card, mediaEl);
+    // Когда медиа готово — пересчитать раскладку
+    const kick = () => scheduleLayout(container);
 
-    // Анимация карточек: случайная задержка 0.3–0.7 сек
+    if (mediaEl.tagName === "IMG") {
+      if (mediaEl.complete) kick();
+      // decode помогает Safari/Chrome, но не обязателен
+      mediaEl.decode?.().then(kick).catch(kick);
+      mediaEl.addEventListener("load", kick, { once: true });
+    } else {
+      if (mediaEl.readyState >= 2) kick();
+      mediaEl.addEventListener("loadedmetadata", kick, { once: true });
+      mediaEl.addEventListener("loadeddata", kick, { once: true });
+    }
+
+    // Анимация карточек: случайная задержка 0.2–1.0 сек
     requestAnimationFrame(() => {
-      const delay = 0.2 + Math.random() * 0.8; // 0.3 → 0.7 сек
+      const delay = 0.2 + Math.random() * 0.8;
       card.style.animationDelay = `${delay}s`;
       card.classList.add("anim-start");
     });
+
+    // подстраховка: если Safari не дал событие
+    setTimeout(() => {
+      if (card.isConnected) kick();
+    }, 900);
   });
 
-  // перерасчёт для всех карточек при смене фильтра
-  recalcGridSpans(container);
+  // первичный layout сразу
+  scheduleLayout(container);
 
   if (typeof onMediaRendered === "function") {
     onMediaRendered(createdMedia);
   }
 }
 
-function sizeCardWhenReady(card, mediaEl) {
-  const resize = () => updateCardSpan(card);
+/* =========================
+   Lightbox
+========================= */
 
-  if (mediaEl.tagName === "IMG") {
-    mediaEl.decode?.().then(() => resize()).catch(() => resize());
-} else if (mediaEl.readyState >= 2) {
-    resize();
-}
-
-  mediaEl.addEventListener("load", resize, { once: true });
-  mediaEl.addEventListener("loadedmetadata", resize, { once: true });
-  mediaEl.addEventListener("loadeddata", resize, { once: true });
-
-  // подстраховка, если событие не сработало (редко на десктопе)
-  setTimeout(() => {
-    if (card.isConnected) resize();
-  }, 1200);
-}
-
-function updateCardSpan(card) {
-  const grid = card.parentElement;
-  if (!grid) return;
-
-  const styles = getComputedStyle(grid);
-  const rowHeight = parseFloat(styles.getPropertyValue("grid-auto-rows")) || 12;
-  const gap = parseFloat(styles.getPropertyValue("gap")) || 12;
-
-  // временно отключаем scale/transform для честного замера
-  const prevTransform = card.style.transform;
-  card.style.transform = "none";
-
-  const cardHeight = Math.ceil(card.getBoundingClientRect().height);
-
-  // возвращаем transform
-  card.style.transform = prevTransform;
-
-  if (!cardHeight) return;
-
-  const span = Math.ceil((cardHeight + gap) / (rowHeight + gap));
-  card.style.gridRowEnd = `span ${span}`;
-}
-
-
-
-
-// Lightbox
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
 const lightboxVideo = document.getElementById("lightbox-video");
@@ -228,22 +307,14 @@ function closeLightbox() {
   el.addEventListener("click", closeLightbox)
 );
 
+/* =========================
+   Intro helpers
+========================= */
+
 function hideIntroScreen() {
   if (introScreen) {
     introScreen.classList.add("hidden");
   }
-}
-
-function recalcGridSpans(gridEl) {
-  if (!gridEl) return;
-  const cards = Array.from(gridEl.querySelectorAll(".card"));
-  cards.forEach(card => {
-    const mediaEl = card.querySelector("img, video");
-    if (mediaEl) {
-      card.dataset.spanned = "0";
-      updateCardSpan(card);
-    }
-  });
 }
 
 function waitForMediaBatch(mediaElements, batchSize = 8) {
@@ -259,10 +330,16 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
   })));
 }
 
-// Init
+/* =========================
+   Init
+========================= */
+
 (async function init() {
   const filtersEl = document.getElementById("filters");
   const gridEl = document.getElementById("grid");
+
+  // Masonry observers (1 раз)
+  const masonry = bindMasonryObservers(gridEl);
 
   try {
     const tagsMap = await loadTags();
@@ -274,8 +351,9 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
 
     // --- APPLY ?tag= FILTER ---
     if (tagFromURL && tagStats.tags.some(t => t.name === tagFromURL)) {
-        activeFilter = tagFromURL;
-}
+      activeFilter = tagFromURL;
+    }
+
     const hideIntroOnce = () => {
       if (introHidden) return;
       introHidden = true;
@@ -285,31 +363,35 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
     const onFilterChange = (value) => {
       activeFilter = value;
       setActiveFilterButton(filtersEl, activeFilter);
-      renderGrid(gridEl, mediaItems, activeFilter);
-    };
 
+      renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
+        masonry?.observeCards?.();
+        scheduleLayout(gridEl);
+        // интро уже может быть скрыто, но логика остаётся безопасной
+        waitForMediaBatch(mediaNodes).then(hideIntroOnce);
+      });
+    };
 
     // --- APPLY ?media= OPEN LIGHTBOX ---
     if (mediaFromURL) {
-        const fullPath = MEDIA_BASE_URL + mediaFromURL;
-        setTimeout(() => {
-            openLightbox(fullPath);
-        }, 600);
+      const fullPath = MEDIA_BASE_URL + mediaFromURL;
+      setTimeout(() => {
+        openLightbox(fullPath);
+      }, 600);
     }
 
     renderFilters(filtersEl, tagStats, onFilterChange);
     setActiveFilterButton(filtersEl, activeFilter);
+
     renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
+      masonry?.observeCards?.();
+      scheduleLayout(gridEl);
       waitForMediaBatch(mediaNodes).then(hideIntroOnce);
     });
 
-let resizeTimer;
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => recalcGridSpans(gridEl), 150);
-});
-
+    // фолбэк на случай медленного интернета
     setTimeout(hideIntroOnce, 4800);
+
   } catch (e) {
     console.error(e);
     hideIntroScreen();
@@ -320,31 +402,21 @@ window.addEventListener("resize", () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => window.location.reload(), 150);
   });
-  
 
   // ==== Скролл-анимация хедера ====
-let lastScroll = 0;
-const header = document.querySelector(".header-blur");
+  let lastScroll = 0;
+  const header = document.querySelector(".header-blur");
 
-window.addEventListener("scroll", () => {
-  const current = window.scrollY;
+  window.addEventListener("scroll", () => {
+    const current = window.scrollY;
 
-  if (current > lastScroll && current > 80) {
-    // Скролл вниз — скрываем
-    header.classList.add("header-hidden");
-  } else {
-    // Скролл вверх — показываем
-    header.classList.remove("header-hidden");
-  }
+    if (current > lastScroll && current > 80) {
+      header.classList.add("header-hidden");
+    } else {
+      header.classList.remove("header-hidden");
+    }
 
-  lastScroll = current;
-  
-});
+    lastScroll = current;
+  }, { passive: true });
 
 })();
-
-function setActiveFilterButton(container, activeValue) {
-  container.querySelectorAll(".filter-btn").forEach(btn => {
-    btn.classList.toggle("filter-btn--active", btn.dataset.filter === activeValue);
-  });
-}
