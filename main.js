@@ -1,11 +1,33 @@
+// Всегда начинаем страницу с верха
+window.history.scrollRestoration = "manual";
+window.scrollTo(0, 0);
+
 // ==== CONFIG ====
 const MEDIA_BASE_URL = "https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev/";
+
 
 // Load tags.json
 async function loadTags() {
   const res = await fetch("https://pub-3bc4f2b4686e4f2da3620e629a5a1aae.r2.dev/tags.json");
   if (!res.ok) throw new Error("Не удалось загрузить tags.json");
   return res.json();
+}
+
+// Load optional cases.json (titles/descriptions). Safe fallback.
+// Expected format (flexible):
+// {
+//   "0003.jpg": { "title": "...", "text": "..." },
+//   "case_id": { "title": "...", "text": "...", "files": ["0003.jpg", ...] }
+// }
+async function loadCases() {
+  const url = MEDIA_BASE_URL + "cases.json";
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
 // --- URL PARAMETERS ---
@@ -19,19 +41,23 @@ function extractNumber(filename) {
   return match ? parseInt(match[1], 10) : 0;
 }
 
-function buildMediaItems(tagsMap) {
-  const items = Object.keys(tagsMap).map(filename => ({
+function buildMediaItems(casesMap) {
+  const items = Object.keys(casesMap).map(filename => ({
     filename,
     url: MEDIA_BASE_URL + filename,
-    tags: tagsMap[filename],
+    tags: Array.isArray(casesMap[filename]?.tags)
+      ? casesMap[filename].tags
+      : [],
   }));
 
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [items[i], items[j]] = [items[j], items[i]];
   }
+
   return items;
 }
+
 
 // Tag stats
 function buildTagStats(mediaItems) {
@@ -228,7 +254,7 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
 
     card.appendChild(inner);
 
-    card.addEventListener("click", () => openLightbox(item.url));
+    card.addEventListener("click", () => openCasebox(item, mediaItems));
     container.appendChild(card);
     createdMedia.push(mediaEl);
 
@@ -268,44 +294,319 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
 }
 
 /* =========================
-   Lightbox
+   Casebox (project view)
 ========================= */
 
-const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightbox-img");
-const lightboxVideo = document.getElementById("lightbox-video");
-const lightboxOverlay = document.getElementById("lightbox-overlay");
-const lightboxClose = document.getElementById("lightbox-close");
+const casebox = document.getElementById("casebox");
+const caseboxOverlay = document.getElementById("casebox-overlay");
+const caseboxBackTop = document.getElementById("casebox-back-top");
+const caseboxIndex = document.getElementById("casebox-index");
+const caseboxBackBottom = document.getElementById("casebox-back-bottom");
+const caseboxImg = document.getElementById("casebox-img");
+const caseboxVideo = document.getElementById("casebox-video");
+const caseboxTags = document.getElementById("casebox-tags");
+const caseboxText = document.getElementById("casebox-text");
+const recoGrid = document.getElementById("reco-grid");
 const introScreen = document.getElementById("intro-screen");
 
-function openLightbox(src) {
-  const isVideo = /\.(mp4|webm)$/i.test(src);
+let CASES_DB = null;
+let lastScrollY = 0;
+let activeCaseItem = null;
+let activeMediaItems = [];
 
-  if (isVideo) {
-    lightboxImg.style.display = "none";
-    lightboxVideo.style.display = "block";
-    lightboxVideo.src = src;
-    lightboxVideo.play().catch(() => {});
-  } else {
-    lightboxVideo.pause();
-    lightboxVideo.style.display = "none";
-    lightboxImg.style.display = "block";
-    lightboxImg.src = src;
+function lockScroll() {
+  lastScrollY = window.scrollY || 0;
+  document.body.classList.add("modal-open");
+  document.body.style.top = `-${lastScrollY}px`;
+}
+
+function unlockScroll() {
+  document.body.classList.remove("modal-open");
+  const top = document.body.style.top;
+  document.body.style.top = "";
+  const y = top ? Math.abs(parseInt(top, 10)) : lastScrollY;
+  window.scrollTo({ top: y, behavior: "instant" });
+}
+
+function normalizeFilename(srcOrName) {
+  // accepts full url or filename
+  try {
+    if (/^https?:/i.test(srcOrName)) return new URL(srcOrName).pathname.split("/").pop();
+  } catch {}
+  return String(srcOrName || "").split("/").pop();
+}
+
+function getCaseMetaForItem(item) {
+  const fn = item?.filename;
+  if (!CASES_DB || !fn) {
+    return { description: "" };
   }
 
-  lightbox.classList.remove("hidden");
+  const v = CASES_DB[fn];
+  if (v && typeof v === "object") {
+    return {
+      description: (v.description || v.text || "").trim()
+    };
+  }
+
+  return { description: "" };
 }
 
-function closeLightbox() {
-  lightbox.classList.add("hidden");
-  lightboxImg.src = "";
-  lightboxVideo.pause();
-  lightboxVideo.src = "";
+
+function renderCaseTags(tags, allItems) {
+  caseboxTags.innerHTML = "";
+  (tags || []).forEach(t => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "casebox__tag";
+    b.textContent = `#${t}`;
+    b.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeCasebox();
+      // применяем фильтр по тегу
+      window.history.replaceState(null, "", `?tag=${encodeURIComponent(t)}`);
+      // триггерим клик по фильтру, если существует
+      const btn = document.querySelector(`.filter-btn[data-filter="${CSS.escape(t)}"]`);
+      btn?.click();
+    });
+    caseboxTags.appendChild(b);
+  });
 }
 
-[lightboxOverlay, lightboxClose, lightboxImg, lightboxVideo].forEach(el =>
-  el.addEventListener("click", closeLightbox)
+function pickRecommendations(current, allItems, desired = 18) {
+  const currentFn = current.filename;
+  const currentTags = new Set(current.tags || []);
+
+  const related = [];
+  const others = [];
+
+  for (const it of allItems) {
+    if (it.filename === currentFn) continue;
+    const hasCommon = (it.tags || []).some(t => currentTags.has(t));
+    (hasCommon ? related : others).push(it);
+  }
+
+  // shuffle both
+  for (let i = related.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [related[i], related[j]] = [related[j], related[i]];
+  }
+  for (let i = others.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [others[i], others[j]] = [others[j], others[i]];
+  }
+
+  const out = related.slice(0, desired);
+  if (out.length < desired) {
+    out.push(...others.slice(0, desired - out.length));
+  }
+  return out;
+}
+
+function renderRecoGrid(recoItems) {
+  if (!recoGrid) return;
+  recoGrid.innerHTML = "";
+
+  const createdMedia = [];
+
+  recoItems.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const inner = document.createElement("div");
+    inner.className = "card-inner";
+
+    let mediaEl;
+    if (/\.(mp4|webm)$/i.test(item.filename)) {
+      const v = document.createElement("video");
+      v.src = item.url;
+      v.muted = true;
+      v.loop = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      v.preload = "metadata";
+      inner.appendChild(v);
+      mediaEl = v;
+    } else {
+      const img = document.createElement("img");
+      img.src = item.url;
+      img.loading = "lazy";
+      img.alt = "";
+      inner.appendChild(img);
+      mediaEl = img;
+    }
+
+    card.appendChild(inner);
+    card.addEventListener("click", () => openCasebox(item, activeMediaItems));
+    recoGrid.appendChild(card);
+    createdMedia.push(mediaEl);
+
+    const kick = () => scheduleLayout(recoGrid);
+    if (mediaEl.tagName === "IMG") {
+      if (mediaEl.complete) kick();
+      mediaEl.decode?.().then(kick).catch(kick);
+      mediaEl.addEventListener("load", kick, { once: true });
+    } else {
+      if (mediaEl.readyState >= 2) kick();
+      mediaEl.addEventListener("loadedmetadata", kick, { once: true });
+      mediaEl.addEventListener("loadeddata", kick, { once: true });
+    }
+
+    requestAnimationFrame(() => {
+      const delay = 0.05 + Math.random() * 0.35;
+      card.style.animationDelay = `${delay}s`;
+      card.classList.add("anim-start");
+    });
+  });
+
+  // первичный layout
+  scheduleLayout(recoGrid);
+}
+
+function adjustCaseMediaScroll(mediaEl) {
+  const mediaBox = document.querySelector(".casebox__media");
+  if (!mediaBox || !mediaEl) return;
+
+  const h = mediaEl.naturalHeight || mediaEl.videoHeight || 0;
+  const w = mediaEl.naturalWidth || mediaEl.videoWidth || 1;
+
+  if (!h || !w) return;
+
+  const ratio = w / h; // ВАЖНО: width / height
+
+  /*
+    Правило:
+    - ratio < 0.5  → очень длинный вертикальный (сайт)
+      → тянем по ширине + ВКЛЮЧАЕМ скролл
+    - ratio >= 0.5 → обычные форматы
+      → ВЛЕЗАЮТ В ЭКРАН, СКРОЛЛА НЕТ
+  */
+
+  if (ratio < 0.5) {
+    // длинный сайт
+    mediaBox.style.overflowY = "auto";
+    mediaBox.style.overflowX = "hidden";
+    mediaBox.style.alignItems = "flex-start";
+
+    mediaEl.style.maxWidth = "100%";
+    mediaEl.style.maxHeight = "none";
+  } else {
+    // обычные форматы
+    mediaBox.style.overflow = "hidden";
+    mediaBox.style.alignItems = "center";
+
+    mediaEl.style.maxWidth = "100%";
+    mediaEl.style.maxHeight = "78vh";
+
+    mediaBox.scrollTop = 0;
+  }
+}
+
+
+
+function openCasebox(item, allItems) {
+  if (!casebox) return;
+    // гарантируем корректное повторное открытие
+  casebox.classList.add("hidden");
+  casebox.setAttribute("aria-hidden", "true");
+
+  activeCaseItem = item;
+  activeMediaItems = Array.isArray(allItems) ? allItems : [];
+
+  const src = item.url;
+  const isVideo = /\.(mp4|webm)$/i.test(item.filename);
+
+  if (isVideo) {
+    caseboxImg.style.display = "none";
+    caseboxVideo.style.display = "block";
+    caseboxVideo.src = src;
+    caseboxVideo.onloadedmetadata = () => adjustCaseMediaScroll(caseboxVideo);
+    caseboxVideo.play().catch(() => {});
+
+  } else {
+    caseboxVideo.pause();
+    caseboxVideo.style.display = "none";
+    caseboxImg.style.display = "block";
+    caseboxImg.src = src;
+    caseboxImg.onload = () => adjustCaseMediaScroll(caseboxImg);
+  }
+
+  // tags + meta
+  renderCaseTags(item.tags || [], allItems);
+  const meta = getCaseMetaForItem(item);
+
+if (meta.description) {
+  caseboxText.textContent = meta.description;
+  caseboxText.style.display = "block";
+} else {
+  caseboxText.textContent = "";
+  caseboxText.style.display = "none";
+}
+
+
+
+  // recommendations (18 минимум)
+  const reco = pickRecommendations(item, allItems, 18);
+  renderRecoGrid(reco);
+
+  // открыть
+  casebox.classList.remove("hidden");
+  casebox.setAttribute("aria-hidden", "false");
+  lockScroll();
+  // Всегда открываем кейс с самого верха
+  requestAnimationFrame(() => {
+  const body = document.querySelector(".casebox__body");
+  if (body) body.scrollTop = 0;
+  });
+
+
+  // URL (для шаринга)
+  const fn = item.filename;
+  if (caseboxIndex) {
+    const num = fn.match(/^0*(\d+)/)?.[1];
+    caseboxIndex.textContent = num ? `№ ${num}` : "";
+  }
+  const url = new URL(window.location.href);
+  url.searchParams.set("media", fn);
+  window.history.replaceState(null, "", url.toString());
+
+  // подстраховка: после загрузки медиа пересчитать reco
+  setTimeout(() => scheduleLayout(recoGrid), 220);
+}
+
+function closeCasebox() {
+  if (!casebox) return;
+  casebox.classList.add("hidden");
+  casebox.setAttribute("aria-hidden", "true");
+
+  // cleanup
+  caseboxImg.src = "";
+  caseboxVideo.pause();
+  caseboxVideo.src = "";
+  recoGrid.innerHTML = "";
+  activeCaseItem = null;
+  if (caseboxIndex) caseboxIndex.textContent = "";
+
+
+  unlockScroll();
+
+  // очистить ?media=, но оставить ?tag= если есть
+  const url = new URL(window.location.href);
+  url.searchParams.delete("media");
+  window.history.replaceState(null, "", url.toString());
+}
+
+[caseboxOverlay, caseboxBackTop, caseboxBackBottom].forEach(el =>
+  el?.addEventListener("click", closeCasebox)
 );
+
+
+// закрытие по ESC
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && casebox && !casebox.classList.contains("hidden")) {
+    closeCasebox();
+  }
+});
 
 /* =========================
    Intro helpers
@@ -342,8 +643,10 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
   const masonry = bindMasonryObservers(gridEl);
 
   try {
-    const tagsMap = await loadTags();
-    const mediaItems = buildMediaItems(tagsMap);
+    const casesMap = await loadTags(); // tags.json = cases
+    CASES_DB = casesMap;
+    const mediaItems = buildMediaItems(casesMap);
+
     const tagStats = buildTagStats(mediaItems);
 
     let activeFilter = "__all";
@@ -372,12 +675,13 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
       });
     };
 
-    // --- APPLY ?media= OPEN LIGHTBOX ---
+    // --- APPLY ?media= OPEN CASE ---
     if (mediaFromURL) {
-      const fullPath = MEDIA_BASE_URL + mediaFromURL;
-      setTimeout(() => {
-        openLightbox(fullPath);
-      }, 600);
+      const fn = normalizeFilename(mediaFromURL);
+      const found = mediaItems.find(m => m.filename === fn);
+      if (found) {
+        setTimeout(() => openCasebox(found, mediaItems), 450);
+      }
     }
 
     renderFilters(filtersEl, tagStats, onFilterChange);
