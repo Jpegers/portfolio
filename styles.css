@@ -617,10 +617,9 @@ main {
   .logo { width: 72px; }
   .contact-link { font-size: 12px; }
 
-   .casebox__index {
-    left: calc(100% - 48px);
+  .casebox__index {
+    left: calc(100% - 64px);
     transform: none;
-
   }
 }
 
