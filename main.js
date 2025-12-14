@@ -142,6 +142,11 @@ function scheduleLayout(gridEl) {
   layoutRaf = requestAnimationFrame(() => layoutMasonry(gridEl));
 }
 
+
+let lastGridHeight = 0;
+let stableLayouts = 0;
+const STABLE_LAYOUTS_REQUIRED = 2;
+
 function layoutMasonry(gridEl) {
   if (!gridEl) return;
 
@@ -187,6 +192,20 @@ function layoutMasonry(gridEl) {
 
   const height = Math.max(...colHeights) - gap;
   gridEl.style.height = `${Math.max(0, Math.ceil(height))}px`;
+  const currentHeight = gridEl.offsetHeight;
+
+  if (Math.abs(currentHeight - lastGridHeight) < 2) {
+    stableLayouts++;
+  } else {
+    stableLayouts = 0;
+  }
+
+  lastGridHeight = currentHeight;
+
+  if (stableLayouts >= STABLE_LAYOUTS_REQUIRED) {
+    document.getElementById("intro-screen")?.classList.add("hidden");
+  }
+
 }
 
 function bindMasonryObservers(gridEl) {
@@ -196,9 +215,6 @@ function bindMasonryObservers(gridEl) {
   const ro = new ResizeObserver(() => scheduleLayout(gridEl));
   ro.observe(gridEl);
 
-  const observeCards = () => {
-    gridEl.querySelectorAll(".card").forEach(card => ro.observe(card));
-  };
 
   // Resize окна
   let resizeTimer;
@@ -207,7 +223,7 @@ function bindMasonryObservers(gridEl) {
     resizeTimer = setTimeout(() => scheduleLayout(gridEl), 80);
   }, { passive: true });
 
-  return { ro, observeCards };
+  return { ro };
 }
 
 /* =========================
@@ -264,12 +280,11 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
     if (mediaEl.tagName === "IMG") {
       if (mediaEl.complete) kick();
       // decode помогает Safari/Chrome, но не обязателен
-      mediaEl.decode?.().then(kick).catch(kick);
       mediaEl.addEventListener("load", kick, { once: true });
     } else {
       if (mediaEl.readyState >= 2) kick();
       mediaEl.addEventListener("loadedmetadata", kick, { once: true });
-      mediaEl.addEventListener("loadeddata", kick, { once: true });
+      
     }
 
     // Анимация карточек: случайная задержка 0.2–1.0 сек
@@ -279,10 +294,13 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
       card.classList.add("anim-start");
     });
 
-    // подстраховка: если Safari не дал событие
-    setTimeout(() => {
-      if (card.isConnected) kick();
-    }, 900);
+    if (mediaEl.complete) kick();
+    mediaEl.addEventListener("load", kick, { once: true });
+
+    if (mediaEl.readyState >= 2) kick();
+    mediaEl.addEventListener("loadedmetadata", kick, { once: true });
+
+
   });
 
   // первичный layout сразу
@@ -455,12 +473,11 @@ function renderRecoGrid(recoItems) {
     const kick = () => scheduleLayout(recoGrid);
     if (mediaEl.tagName === "IMG") {
       if (mediaEl.complete) kick();
-      mediaEl.decode?.().then(kick).catch(kick);
+      
       mediaEl.addEventListener("load", kick, { once: true });
     } else {
       if (mediaEl.readyState >= 2) kick();
       mediaEl.addEventListener("loadedmetadata", kick, { once: true });
-      mediaEl.addEventListener("loadeddata", kick, { once: true });
     }
 
     requestAnimationFrame(() => {
@@ -716,7 +733,7 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
       setActiveFilterButton(filtersEl, activeFilter);
 
       renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
-        masonry?.observeCards?.();
+        
         scheduleLayout(gridEl);
         // интро уже может быть скрыто, но логика остаётся безопасной
         waitForMediaBatch(mediaNodes).then(hideIntroOnce);
@@ -736,7 +753,7 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
     setActiveFilterButton(filtersEl, activeFilter);
 
     renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
-      masonry?.observeCards?.();
+      
       scheduleLayout(gridEl);
       waitForMediaBatch(mediaNodes).then(hideIntroOnce);
     });
@@ -772,4 +789,3 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
   }, { passive: true });
 
 })();
- 
