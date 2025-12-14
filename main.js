@@ -1,4 +1,4 @@
-// Всегда начинаем страницу с верха
+// Всегда начинаем страницу с верха 
 window.history.scrollRestoration = "manual";
 window.scrollTo(0, 0);
 
