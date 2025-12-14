@@ -142,11 +142,6 @@ function scheduleLayout(gridEl) {
   layoutRaf = requestAnimationFrame(() => layoutMasonry(gridEl));
 }
 
-
-let lastGridHeight = 0;
-let stableLayouts = 0;
-const STABLE_LAYOUTS_REQUIRED = 2;
-
 function layoutMasonry(gridEl) {
   if (!gridEl) return;
 
@@ -192,20 +187,6 @@ function layoutMasonry(gridEl) {
 
   const height = Math.max(...colHeights) - gap;
   gridEl.style.height = `${Math.max(0, Math.ceil(height))}px`;
-  const currentHeight = gridEl.offsetHeight;
-
-  if (Math.abs(currentHeight - lastGridHeight) < 2) {
-    stableLayouts++;
-  } else {
-    stableLayouts = 0;
-  }
-
-  lastGridHeight = currentHeight;
-
-  if (stableLayouts >= STABLE_LAYOUTS_REQUIRED) {
-    document.getElementById("intro-screen")?.classList.add("hidden");
-  }
-
 }
 
 function bindMasonryObservers(gridEl) {
