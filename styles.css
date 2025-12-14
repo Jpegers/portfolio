@@ -1,4 +1,4 @@
-*, 
+*,
 *::before,
 *::after {
   box-sizing: border-box;
@@ -377,6 +377,9 @@ main {
 }
 
 .casebox__panel {
+  height: 100vh;
+  max-height: 100vh;
+
   position: relative;
   z-index: 2;
   
@@ -442,7 +445,9 @@ main {
 .casebox__body {
   padding: 0 0 48px; /* ← ВАЖНО: низ */
   overflow-y: auto;
+    height: calc(100vh - 64px);
   height: calc(100dvh - 64px);
+
 }
 
 .casebox__panel::after {
@@ -484,6 +489,9 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  position: relative;
+
 }
 
 
@@ -610,6 +618,10 @@ main {
   .contact-link { font-size: 12px; }
 }
 
+
+
+
+/* iOS/Safari perf guard */
 @supports (-webkit-touch-callout: none) {
   .card {
     -webkit-transform: translateZ(0);
@@ -619,22 +631,13 @@ main {
 
   img,
   video {
-    content-visibility: visible !important;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
+}
 
-  
-
-
-
-
-
-
-
-
-
-  .casebox__loader {
+/* Casebox loader (all browsers) */
+.casebox__loader {
   position: absolute;
   inset: 0;
   display: flex;
@@ -643,6 +646,7 @@ main {
 
   background: rgba(2,4,10,0.45);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 
   z-index: 2;
   opacity: 1;
@@ -665,6 +669,4 @@ main {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
 }
