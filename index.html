@@ -78,12 +78,49 @@
     <a href="policy.html" target="_blank" rel="noopener noreferrer">Политика конфиденциальности</a>
   </footer>
 
-  <!-- LIGHTBOX -->
-  <div id="lightbox" class="lightbox hidden">
-    <div id="lightbox-overlay" class="lightbox__overlay"></div>
-    <img id="lightbox-img" class="lightbox__img" alt="">
-    <video id="lightbox-video" class="lightbox__video" playsinline muted loop preload="metadata"></video>
-    <button id="lightbox-close" class="lightbox__close">✕</button>
+  <!-- CASE VIEW (Modal) -->
+  <div id="casebox" class="casebox hidden" aria-hidden="true">
+    <div id="casebox-overlay" class="casebox__overlay"></div>
+
+    <section class="casebox__panel" role="dialog" aria-modal="true" aria-label="Просмотр проекта">
+      <header class="casebox__header">
+        <button id="casebox-back-top" class="casebox__back" type="button">
+          ← Вернуться назад
+        </button>
+
+        <div id="casebox-index" class="casebox__index"></div>
+      </header>
+
+
+      <div class="casebox__body">
+        <!-- Media -->
+        <div class="casebox__media">
+          <img id="casebox-img" class="casebox__img" alt="">
+          <video id="casebox-video" class="casebox__video" playsinline muted loop preload="metadata"></video>
+          <div class="casebox__loader" id="casebox-loader">
+            <div class="casebox__spinner"></div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div id="casebox-tags" class="casebox__tags"></div>
+
+        <!-- Description -->
+        <div class="casebox__desc">
+          <div id="casebox-text" class="casebox__text"></div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="casebox__reco">
+          <div class="casebox__reco-title">Похожие работы:</div>
+          <div id="reco-grid" class="grid grid--reco"></div>
+
+          <div class="casebox__actions">
+            <button id="casebox-back-bottom" class="casebox__back" type="button">← Вернуться назад</button>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script src="main.js"></script>
