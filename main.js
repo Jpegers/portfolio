@@ -1,4 +1,4 @@
-// Всегда начинаем страницу с верха 
+// Всегда начинаем страницу с верха
 window.history.scrollRestoration = "manual";
 window.scrollTo(0, 0);
 
@@ -502,6 +502,18 @@ function adjustCaseMediaScroll(mediaEl) {
   }
 }
 
+const isMobile = window.innerWidth < 768;
+
+caseboxImg.onload = () => {
+  adjustCaseMediaScroll(caseboxImg);
+  hideCaseLoader();
+};
+
+if (isMobile) {
+  setTimeout(() => {
+    hideCaseLoader();
+  }, 600);
+}
 
 
 function openCasebox(item, allItems) {
