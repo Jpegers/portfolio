@@ -592,7 +592,9 @@ function closeCasebox() {
   casebox.setAttribute("aria-hidden", "true");
 
   // cleanup
-  caseboxImg.src = "";
+  caseboxImg.decoding = "async";
+  caseboxImg.loading = "eager";
+  caseboxImg.src = item.url;
   caseboxVideo.pause();
   caseboxVideo.src = "";
   recoGrid.innerHTML = "";
