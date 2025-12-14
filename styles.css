@@ -618,6 +618,22 @@ main {
   .contact-link { font-size: 12px; }
 }
 
+/* Mobile fix: case number alignment */
+@media (max-width: 640px) {
+  .casebox__header {
+    position: relative;
+  }
+
+  .casebox__title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+}
+
+
 
 
 
