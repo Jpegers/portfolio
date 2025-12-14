@@ -402,30 +402,35 @@ function renderCaseTags(tags, allItems) {
   });
 }
 
-
-function pickRecommendations(current, allItems) {
+function pickRecommendations(current, allItems, desired = 18) {
   const currentFn = current.filename;
   const currentTags = new Set(current.tags || []);
 
-  if (!currentTags.size) return [];
-
   const related = [];
+  const others = [];
 
   for (const it of allItems) {
     if (it.filename === currentFn) continue;
     const hasCommon = (it.tags || []).some(t => currentTags.has(t));
-    if (hasCommon) related.push(it);
+    (hasCommon ? related : others).push(it);
   }
 
-  // shuffle related
+  // shuffle both
   for (let i = related.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [related[i], related[j]] = [related[j], related[i]];
   }
+  for (let i = others.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [others[i], others[j]] = [others[j], others[i]];
+  }
 
-  return related;
+  const out = related.slice(0, desired);
+  if (out.length < desired) {
+    out.push(...others.slice(0, desired - out.length));
+  }
+  return out;
 }
-
 
 function renderRecoGrid(recoItems) {
   if (!recoGrid) return;
@@ -822,3 +827,10 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
   }, { passive: true });
 
 })();
+
+
+setTimeout(() => {
+  if (!introHidden) {
+    document.getElementById("intro-screen")?.classList.add("hidden");
+  }
+}, 8000);
