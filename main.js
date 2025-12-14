@@ -304,6 +304,16 @@ const caseboxIndex = document.getElementById("casebox-index");
 const caseboxBackBottom = document.getElementById("casebox-back-bottom");
 const caseboxImg = document.getElementById("casebox-img");
 const caseboxVideo = document.getElementById("casebox-video");
+const caseboxLoader = document.getElementById("casebox-loader");
+
+function showCaseLoader() {
+  caseboxLoader?.classList.remove("hidden");
+}
+
+function hideCaseLoader() {
+  caseboxLoader?.classList.add("hidden");
+}
+
 const caseboxTags = document.getElementById("casebox-tags");
 const caseboxText = document.getElementById("casebox-text");
 const recoGrid = document.getElementById("reco-grid");
@@ -325,7 +335,8 @@ function unlockScroll() {
   const top = document.body.style.top;
   document.body.style.top = "";
   const y = top ? Math.abs(parseInt(top, 10)) : lastScrollY;
-  window.scrollTo({ top: y, behavior: "instant" });
+  window.scrollTo(0, y);
+
 }
 
 function normalizeFilename(srcOrName) {
@@ -502,18 +513,6 @@ function adjustCaseMediaScroll(mediaEl) {
   }
 }
 
-const isMobile = window.innerWidth < 768;
-
-caseboxImg.onload = () => {
-  adjustCaseMediaScroll(caseboxImg);
-  hideCaseLoader();
-};
-
-if (isMobile) {
-  setTimeout(() => {
-    hideCaseLoader();
-  }, 600);
-}
 
 
 function openCasebox(item, allItems) {
@@ -525,23 +524,60 @@ function openCasebox(item, allItems) {
   activeCaseItem = item;
   activeMediaItems = Array.isArray(allItems) ? allItems : [];
 
-  const src = item.url;
+    const src = item.url;
   const isVideo = /\.(mp4|webm)$/i.test(item.filename);
+
+  // reset loader state every open
+  showCaseLoader();
+
+  // сбрасываем старые хэндлеры (важно для iOS)
+  caseboxImg.onload = null;
+  caseboxImg.onerror = null;
+  caseboxVideo.onloadedmetadata = null;
+  caseboxVideo.onloadeddata = null;
+  caseboxVideo.onerror = null;
 
   if (isVideo) {
     caseboxImg.style.display = "none";
     caseboxVideo.style.display = "block";
+
+    caseboxVideo.pause();
+    caseboxVideo.removeAttribute("src"); // жесткий сброс
+    caseboxVideo.load();
+
     caseboxVideo.src = src;
-    caseboxVideo.onloadedmetadata = () => adjustCaseMediaScroll(caseboxVideo);
-    caseboxVideo.play().catch(() => {});
+    caseboxVideo.load();
+
+    const onReady = () => {
+      hideCaseLoader();
+      adjustCaseMediaScroll(caseboxVideo);
+    };
+
+    caseboxVideo.onloadedmetadata = onReady;
+    caseboxVideo.onloadeddata = onReady;
+    caseboxVideo.onerror = () => hideCaseLoader();
+
+    // play после установки src (клик пользователя = user gesture)
+    caseboxVideo.play().catch(() => {
+      // даже если play не дали — лоадер убираем после metadata
+    });
 
   } else {
     caseboxVideo.pause();
     caseboxVideo.style.display = "none";
+    caseboxVideo.removeAttribute("src");
+    caseboxVideo.load();
+
     caseboxImg.style.display = "block";
     caseboxImg.src = src;
-    caseboxImg.onload = () => adjustCaseMediaScroll(caseboxImg);
+
+    caseboxImg.onload = () => {
+      hideCaseLoader();
+      adjustCaseMediaScroll(caseboxImg);
+    };
+    caseboxImg.onerror = () => hideCaseLoader();
   }
+
 
   // tags + meta
   renderCaseTags(item.tags || [], allItems);
@@ -592,9 +628,7 @@ function closeCasebox() {
   casebox.setAttribute("aria-hidden", "true");
 
   // cleanup
-  caseboxImg.decoding = "async";
-  caseboxImg.loading = "eager";
-  caseboxImg.src = item.url;
+  caseboxImg.src = "";
   caseboxVideo.pause();
   caseboxVideo.src = "";
   recoGrid.innerHTML = "";
