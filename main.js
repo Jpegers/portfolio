@@ -142,6 +142,11 @@ function scheduleLayout(gridEl) {
   layoutRaf = requestAnimationFrame(() => layoutMasonry(gridEl));
 }
 
+
+let lastGridHeight = 0;
+let stableLayouts = 0;
+const STABLE_LAYOUTS_REQUIRED = 2;
+
 function layoutMasonry(gridEl) {
   if (!gridEl) return;
 
@@ -187,6 +192,20 @@ function layoutMasonry(gridEl) {
 
   const height = Math.max(...colHeights) - gap;
   gridEl.style.height = `${Math.max(0, Math.ceil(height))}px`;
+  const currentHeight = gridEl.offsetHeight;
+
+  if (Math.abs(currentHeight - lastGridHeight) < 2) {
+    stableLayouts++;
+  } else {
+    stableLayouts = 0;
+  }
+
+  lastGridHeight = currentHeight;
+
+  if (stableLayouts >= STABLE_LAYOUTS_REQUIRED) {
+    document.getElementById("intro-screen")?.classList.add("hidden");
+  }
+
 }
 
 function bindMasonryObservers(gridEl) {
@@ -383,35 +402,30 @@ function renderCaseTags(tags, allItems) {
   });
 }
 
-function pickRecommendations(current, allItems, desired = 18) {
+
+function pickRecommendations(current, allItems) {
   const currentFn = current.filename;
   const currentTags = new Set(current.tags || []);
 
+  if (!currentTags.size) return [];
+
   const related = [];
-  const others = [];
 
   for (const it of allItems) {
     if (it.filename === currentFn) continue;
     const hasCommon = (it.tags || []).some(t => currentTags.has(t));
-    (hasCommon ? related : others).push(it);
+    if (hasCommon) related.push(it);
   }
 
-  // shuffle both
+  // shuffle related
   for (let i = related.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [related[i], related[j]] = [related[j], related[i]];
   }
-  for (let i = others.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [others[i], others[j]] = [others[j], others[i]];
-  }
 
-  const out = related.slice(0, desired);
-  if (out.length < desired) {
-    out.push(...others.slice(0, desired - out.length));
-  }
-  return out;
+  return related;
 }
+
 
 function renderRecoGrid(recoItems) {
   if (!recoGrid) return;
@@ -713,6 +727,23 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
       activeFilter = value;
       setActiveFilterButton(filtersEl, activeFilter);
 
+      // --- URL sync (tag / all / clean) ---
+      let basePath = window.location.pathname;
+      if (!basePath.endsWith("/") && !basePath.endsWith(".html")) basePath = "/";
+      const url = new URL(window.location.origin + basePath);
+
+      if (value === "__all") {
+        // чистый URL
+        url.searchParams.delete("tag");
+        url.searchParams.delete("media");
+      } else {
+        url.searchParams.set("tag", value);
+        url.searchParams.delete("media");
+      }
+
+      window.history.replaceState(null, "", url.toString());
+
+
       renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
         
         scheduleLayout(gridEl);
@@ -749,11 +780,32 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
 
   document.getElementById("logo-link").addEventListener("click", (e) => {
     e.preventDefault();
+
+    // сброс фильтра
+    activeFilter = "__all";
+    setActiveFilterButton(filtersEl, activeFilter);
+
+    // закрыть кейс, если открыт
+    closeCasebox();
+
+    // чистый URL
+    let basePath = window.location.pathname;
+    if (!basePath.endsWith("/") && !basePath.endsWith(".html")) basePath = "/";
+    const url = new URL(window.location.origin + basePath);
+    url.searchParams.delete("tag");
+    url.searchParams.delete("media");
+    window.history.replaceState(null, "", url.toString());
+
+    // вверх
     window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => window.location.reload(), 150);
+
+    // перерисовка сетки
+    renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
+      scheduleLayout(gridEl);
+    });
   });
 
-  // ==== Скролл-анимация хедера ====
+// ==== Скролл-анимация хедера ====
   let lastScroll = 0;
   const header = document.querySelector(".header-blur");
 
