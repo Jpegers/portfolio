@@ -674,3 +674,50 @@ main {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+
+
+
+
+
+
+/* =========================
+   Video loading badge
+========================= */
+
+.card-inner {
+  position: relative;
+}
+
+/* Плашка по умолчанию */
+.card-inner video::after {
+  content: "Загрузка видео…";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  color: rgba(255,255,255,0.75);
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(0,0,0,0.35),
+      rgba(0,0,0,0.65)
+    );
+
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* Когда видео реально готово — скрываем плашку */
+.card.is-measured video::after {
+  opacity: 0;
+}
