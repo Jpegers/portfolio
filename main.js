@@ -257,6 +257,7 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
       video.autoplay = true;
       video.playsInline = true;
       video.preload = "metadata";
+      video.load();
       inner.appendChild(video);
       mediaEl = video;
     } else {
@@ -730,7 +731,10 @@ function warmupMedia(mediaItems, count = 12, timeoutMs = 3500) {
   const gridEl = document.getElementById("grid");
 
   let mediaItems = [];
+  let activeFilter = "__all";
+  let introHidden = false;
   let warmupPromise = Promise.resolve();
+
 
   // Masonry observers (1 раз)
   const masonry = bindMasonryObservers(gridEl);
@@ -776,10 +780,10 @@ function warmupMedia(mediaItems, count = 12, timeoutMs = 3500) {
 
 
       renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
-        
+
         scheduleLayout(gridEl);
         // интро уже может быть скрыто, но логика остаётся безопасной
-         Promise.all([warmupPromise, waitForMediaBatch(mediaNodes)])
+        Promise.all([warmupPromise, waitForMediaBatch(mediaNodes)])
           .then(hideIntroOnce);
       });
     };
@@ -855,4 +859,3 @@ function warmupMedia(mediaItems, count = 12, timeoutMs = 3500) {
   }, { passive: true });
 
 })();
-
