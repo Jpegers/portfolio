@@ -257,6 +257,7 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
       video.autoplay = true;
       video.playsInline = true;
       video.preload = "metadata";
+      video.load();
       inner.appendChild(video);
       mediaEl = video;
     } else {
@@ -274,7 +275,7 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
     container.appendChild(card);
     createdMedia.push(mediaEl);
 
-    // Когда медиа готово — пересчитать раскладку
+    // Когда медиа готово — пересчитать раскладку (без дублей)
     const kick = () => scheduleLayout(container);
 
     if (mediaEl.tagName === "IMG") {
@@ -284,7 +285,8 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
     } else {
       if (mediaEl.readyState >= 2) kick();
       mediaEl.addEventListener("loadedmetadata", kick, { once: true });
-      
+      mediaEl.addEventListener("loadeddata", kick, { once: true });
+
     }
 
     // Анимация карточек: случайная задержка 0.2–1.0 сек
@@ -293,12 +295,6 @@ function renderGrid(container, mediaItems, activeFilter, onMediaRendered) {
       card.style.animationDelay = `${delay}s`;
       card.classList.add("anim-start");
     });
-
-    if (mediaEl.complete) kick();
-    mediaEl.addEventListener("load", kick, { once: true });
-
-    if (mediaEl.readyState >= 2) kick();
-    mediaEl.addEventListener("loadedmetadata", kick, { once: true });
 
 
   });
@@ -696,6 +692,45 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
   })));
 }
 
+// Быстрый прогрев: загружаем метаданные/превью первых N медиа,
+// чтобы после интро карточки и модалка открывались без тормозов.
+function warmupMedia(mediaItems, count = 12, timeoutMs = 3500) {
+  const shortlist = mediaItems.slice(0, count);
+
+  const loaders = shortlist.map(item => new Promise(resolve => {
+    const isVideo = /\.(mp4|webm)$/i.test(item.filename);
+
+    if (isVideo) {
+      const v = document.createElement("video");
+      v.preload = "metadata";
+      v.muted = true;
+      v.playsInline = true;
+
+      const done = () => {
+        v.removeAttribute("src");
+        v.load();
+        resolve();
+      };
+
+      v.addEventListener("loadedmetadata", done, { once: true });
+      v.addEventListener("error", done, { once: true });
+      v.src = item.url;
+    } else {
+      const img = new Image();
+      img.decoding = "async";
+      img.loading = "eager";
+
+      const done = () => resolve();
+      img.addEventListener("load", done, { once: true });
+      img.addEventListener("error", done, { once: true });
+      img.src = item.url;
+    }
+  }));
+
+  const timeout = new Promise(resolve => setTimeout(resolve, timeoutMs));
+  return Promise.race([Promise.allSettled(loaders), timeout]);
+}
+
 /* =========================
    Init
 ========================= */
@@ -704,18 +739,21 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
   const filtersEl = document.getElementById("filters");
   const gridEl = document.getElementById("grid");
 
+  let mediaItems = [];
+  let activeFilter = "__all";
+  let introHidden = false;
+  let warmupPromise = Promise.resolve();
+
   // Masonry observers (1 раз)
   const masonry = bindMasonryObservers(gridEl);
 
   try {
     const casesMap = await loadTags(); // tags.json = cases
     CASES_DB = casesMap;
-    const mediaItems = buildMediaItems(casesMap);
+    mediaItems = buildMediaItems(casesMap);
+    warmupPromise = warmupMedia(mediaItems, 14);
 
     const tagStats = buildTagStats(mediaItems);
-
-    let activeFilter = "__all";
-    let introHidden = false;
 
     // --- APPLY ?tag= FILTER ---
     if (tagFromURL && tagStats.tags.some(t => t.name === tagFromURL)) {
@@ -750,10 +788,11 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
 
 
       renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
-        
+
         scheduleLayout(gridEl);
         // интро уже может быть скрыто, но логика остаётся безопасной
-        waitForMediaBatch(mediaNodes).then(hideIntroOnce);
+        Promise.all([warmupPromise, waitForMediaBatch(mediaNodes)])
+          .then(hideIntroOnce);
       });
     };
 
@@ -770,9 +809,10 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
     setActiveFilterButton(filtersEl, activeFilter);
 
     renderGrid(gridEl, mediaItems, activeFilter, (mediaNodes) => {
-      
+
       scheduleLayout(gridEl);
-      waitForMediaBatch(mediaNodes).then(hideIntroOnce);
+      Promise.all([warmupPromise, waitForMediaBatch(mediaNodes)])
+        .then(hideIntroOnce);
     });
 
     // фолбэк на случай медленного интернета
@@ -827,10 +867,3 @@ function waitForMediaBatch(mediaElements, batchSize = 8) {
   }, { passive: true });
 
 })();
-
-
-setTimeout(() => {
-  if (!introHidden) {
-    document.getElementById("intro-screen")?.classList.add("hidden");
-  }
-}, 8000);
