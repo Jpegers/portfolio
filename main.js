@@ -390,35 +390,25 @@ function renderCaseTags(tags, allItems) {
   });
 }
 
-function pickRecommendations(current, allItems, desired = 18) {
-  const currentFn = current.filename;
+function pickRecommendations(current, allItems, max = 18) {
   const currentTags = new Set(current.tags || []);
+  if (!currentTags.size) return [];
 
-  const related = [];
-  const others = [];
+  // только работы с пересечением тегов
+  const related = allItems
+    .filter(it => it.filename !== current.filename)
+    .map(it => {
+      const commonCount = (it.tags || []).filter(t => currentTags.has(t)).length;
+      return { item: it, commonCount };
+    })
+    .filter(x => x.commonCount > 0);
 
-  for (const it of allItems) {
-    if (it.filename === currentFn) continue;
-    const hasCommon = (it.tags || []).some(t => currentTags.has(t));
-    (hasCommon ? related : others).push(it);
-  }
+  // сортируем по количеству общих тегов (чем больше — тем выше)
+  related.sort((a, b) => b.commonCount - a.commonCount);
 
-  // shuffle both
-  for (let i = related.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [related[i], related[j]] = [related[j], related[i]];
-  }
-  for (let i = others.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [others[i], others[j]] = [others[j], others[i]];
-  }
-
-  const out = related.slice(0, desired);
-  if (out.length < desired) {
-    out.push(...others.slice(0, desired - out.length));
-  }
-  return out;
+  return related.slice(0, max).map(x => x.item);
 }
+
 
 function renderRecoGrid(recoItems) {
   if (!recoGrid) return;
